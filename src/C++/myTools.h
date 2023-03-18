@@ -1,0 +1,1 @@
+void get_need_file(std::string path, std::vector<std::string>& file, std::string ext = ".png");
