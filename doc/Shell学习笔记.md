@@ -301,7 +301,7 @@ $匹配一行的结尾
   ```
   cut -d " " -f 1 cut.txt
   ```
-  - 选取系统 PATH 变量值，第 2 个“：”开始后的所有路径
+  - 选取系统 PATH 变量值，第 2 
   ps:竖线|，在linux中是作为管道符的，将‘|’前面命令的输出作为'|'后面的输入
   ```
   echo $PATH | cut -d ":" -f 3-
@@ -311,3 +311,25 @@ $匹配一行的结尾
    ifconfig enp5s0 | grep netmask | cut -d " " -f 10
   ```
 9.2 ***awk***
+把文件逐行的读入，以空格为默认分隔符将每行切片，切开的部分再进行分析处理。
+  9.2.1 基本语法
+  ```
+  awk [选项参数] '/pattern1/{action1} /pattern2/{action2}...' filename
+  ```
+  9.2.2 选项参数说明
+  -F 指定输入文件分隔符
+  -v 赋值一个用户定义变量
+  9.2.3 案例
+  - 搜索 passwd 文件以 root 关键字开头的所有行，并输出该行的第 7 列。
+  ```
+  awk -F : '/^root/{print $7}' passwd
+  ```
+  - 搜索 passwd 文件以 root 关键字开头的所有行，并输出该行的第 1 列和第 7 列，中间以","号分割。
+  ```
+  awk -F : '/^root/{print $1","$7}' passwd
+  ```
+  - 只显示/etc/passwd 的第一列和第七列，以逗号分割，且在所有行前面添加列名 user，shell，在最后一行添加"jiguotong,/bin/bash"。
+  ```
+   awk -F : 'BEGIN{print "user, shell"} {print $1","$7} END{print "jiguotong,/bin/bash"}' passwd
+   ps：注意：BEGIN 在所有数据读取行之前执行；END 在所有数据执行之后执行。
+  ```
