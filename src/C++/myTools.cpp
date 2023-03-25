@@ -1,6 +1,7 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <ctime>
 #include <io.h>
 #include "mtTools.h"
 void get_need_file(std::string path, std::vector<std::string>& file, std::string ext)
@@ -16,4 +17,10 @@ void get_need_file(std::string path, std::vector<std::string>& file, std::string
 		} while (_findnext(file_handle, &file_info) == 0);
 		_findclose(file_handle);
 	}
+}
+void GetFunctionRunTime(){
+	clock_t startTime, endTime;
+    startTime = clock();
+	endTime = clock();
+	std::cout << "直接初始化Total Time: " << (double)(endTime - startTime) / CLOCKS_PER_SEC << "s" << std::endl;
 }
