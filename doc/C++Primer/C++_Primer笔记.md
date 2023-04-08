@@ -32,10 +32,11 @@ private:
     · 将一个对象作为实参传递给一个非引用类型的形参
     · 从一个返回类型为非引用类型的函数返回一个对象
     · 用花括号列表初始化一个数组中的元素或一个聚合类中的成员。
-    
 
 ## 13.2 拷贝赋值运算符
+
 是一种运算符重载，赋值运算符通常应该返回一个指向其左侧运算对象的引用。关键字oprator=
+
 ```c
 MyEditor& MyEditor::oprator=(const MyEditor editor){
     this->age = editor.age;
@@ -43,30 +44,40 @@ MyEditor& MyEditor::oprator=(const MyEditor editor){
     return *this;
 }
 ```
+
 小结：当没有为类定义拷贝构造函数和拷贝复制运算符时，编译器会自动生成**合成拷贝构造函数**和**合成拷贝复制运算符**，若是想阻止拷贝，可将函数定义为delete函数，即MyEditor(const MyEditor&)=delete；
+
 ## 13.3 析构函数
+
 无论何时一个***对象被销毁***，就会自动调用其析构函数
+
 - 变量在离开其作用域时被销毁
 - 当一个对象被销毁时，其成员被销毁
 - 容器（无论时标准库容器还是数组）被销毁时，其元素被销毁
 - 对于动态分配的对象，当对指向它的指针应用delete运算符时被销毁
 - 对于临时对象，当创建它的完整表达式结束时被销毁
+
 ```c
 ~MyEditor();
 ```
+
 若类的成员变量中含有指针，且在类的构造函数中，为该指针动态分配了内存，则需要在析构函数中delete掉该指针，防止内存泄露。
 
 ## 13.4 移动构造函数
+
 右值引用的主要应用就是重载了移动构造函数，利用了将亡值，将将亡值的空间内容交换到要拷贝的对象中。减少了深拷贝。
 移动构造函数首先将传递参数的内存地址空间接管，然后将内部所有指针设置为nullptr，并且在原地址上进行新对象的构造，最后调用原对象的的析构函数，这样做既不会产生额外的拷贝开销，也不会给新对象分配内存空间。即提高程序的执行效率，节省内存消耗。
 当返回值是一个局部变量时，会调用该对象的移动构造函数。
+
 ```c
 Base(const Base&& base){
     this->ptr = base->ptr;
     base->ptr = nullprt;
 };
 ```
+
 应用实例：
+
 ```c
 Base(Base&& base) {
         this->arr = base.arr;
@@ -76,14 +87,16 @@ Base(Base&& base) {
 Base getBase() {
     Base base(1000);//此处base是一个局部变量，是一个将亡值，在return之后会销毁
     return base;
-}    
+}  
 int main(){
     Base base8(getBase());//此处调用了Base的移动构造函数，将右值引用传递给base8
 }
 ```
 
 ## 13.5 移动赋值运算符
+
 完成和移动构造函数一样的功能
+
 ```c
 Base& operator=(Base&& base) {
         this->arr = base.arr;
@@ -97,3 +110,135 @@ int main(){
 ```
 
 # 第十六章 模板与泛型编程
+
+模板——是一段带有类型参数的程序代码，可以通过给这些参数提供一些类型来得到针对不同类型的具体代码。
+模板是规则，通过模板可以演化出多个具体的类或函数。
+
+## 16.1 函数模板
+
+注意：模板的声明和定义只能放在全局，命名空间或者类范围内进行，即不能在局部范围或者函数内部进行，比如不能在main函数中声明和定义一个模板。
+模板定义以关键字template开始，后跟一个模板参数列表。
+
+- 函数模板定义
+
+```c
+template <typename T>
+int compare(const T &v1, const T &v2){
+    if(v1 < v2)
+        return -1;
+    if(v2<v1)
+        return 1;
+    return 0;
+}
+template <Typename T1,Typename T2>
+int add(const T1& v1,const T2& v2){
+     if(v1 < v2)
+        return -1;
+    if(v2<v1)
+        return 1;
+    return 0;
+}
+```
+
+- 函数模板实例化
+
+```c
+// 1.隐式实例化——根据函数调用时传入的数据类型，推演出模板形参类型
+std::cout<<compare(1,0)<<std::endl;
+// 2.显式实例化——通过显式声明形式指定模板参数类型，调用函数时会自动将参数转换为指定类型
+template int compare<int>(int,int);     // 显示实例化的语法声明
+cout<<compare<int>(1,2.4);  // 实际在调用的时候比较的是1和2
+```
+
+注意：
+1.不提供隐式类型转换，必须是严格匹配。
+2.函数模板和类模板成员函数的定义通常放在头文件中。
+3.函数模板和普通函数构成重载时，调用规则如下：
+```c
+template<typename T>
+void sum(T a,T b){
+    cout<<"模板函数(2)"<<a+b<<endl;
+}
+
+template<typename T>
+void sum(T a,T b,T c){
+    cout<<"模板函数(3)"<<a+b+c<<endl;
+}
+
+void sum(int a,int c){
+    cout<<"普通函数"<<a+c<<endl;
+}
+
+void Test(){
+    sum(1,2);			//当函数模板和普通函数参数都符合时，优先选择普通函数
+    sum<>(1,2);			//若显示使用模板函数，则使用<>类型列表
+    sum(3.0,4.2);		//如果函数模板产生更好的匹配，则使用函数模板
+    sum(5.0,6.5,8.2);	//只有一个合适
+    sum('a',12);		//调用普通函数，可以隐式类型转换
+}
+
+```
+
+## 16.2 类模板
+
+类模板是对成员数据类型不同的类的抽象。
+
+- 类模板定义
+
+```c
+// 模板的参数类型定义写在类的定义之前，在类里的任意位置都可以使用
+template<typename T>
+class Display
+{
+public:
+	Display(T val) :_value(val){}
+	void display(){
+		cout << _value << endl;
+	}
+private:
+	T _value;
+};
+```
+
+- 类模板实例化
+```c
+Display<string> d("hello world");
+d.display();
+```
+- 类模板中的成员函数同样可以在类模板的定义之外定义：
+语法如下
+```c
+template<模板形参表>
+函数返回类型 类名<模板形参名>::函数名（参数列表）｛｝
+```
+```c
+template<typename T>   //类模板
+class Array
+{
+private:
+	int size;
+	T* ptr;
+public:
+	Array(T arr[], int s);   //构造函数
+	void show();
+};
+template<typename T>   //类模板外定义其成员函数
+Array<T>::Array(T arr[], int s){
+	ptr = new T[s];
+	size = s;
+	for (int i = 0; i < size; i++){
+		ptr[i] = arr[i];
+	}
+}
+template<typename T>   //类模板外定义其成员函数
+void Array<T>::show(){
+	for (int i = 0; i < size; i++)
+		cout << *(ptr + i) << " ";
+	cout << endl;
+}
+```
+
+# 第十八章 异常处理
+异常处理(exception handing)机制允许程序中独立开发的部分能够在运行时就出现的问题进行通信并作出相应的处理。
+## 18.1 抛出异常
+一个异常如果没有被捕获，则它将终止当前的程序。
