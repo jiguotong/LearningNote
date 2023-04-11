@@ -242,3 +242,109 @@ void Array<T>::show(){
 异常处理(exception handing)机制允许程序中独立开发的部分能够在运行时就出现的问题进行通信并作出相应的处理。
 ## 18.1 抛出异常
 一个异常如果没有被捕获，则它将终止当前的程序。
+通过throw操作创建一个异常对象并抛掷
+```c
+void OpenFile(){
+    std::string path = "D:\\test.txt";
+    std::ifstream fin;
+    fin.open(path, std::ios::in);
+    if (!fin.is_open())
+    {
+        throw "ERROR:Open file failed!";
+    }
+    fin.close();
+}
+```
+
+## 18.2 捕获异常
+1.在需要捕捉异常的地方，将可能抛出异常的程序段嵌在try块之中；
+2.按正常的程序顺序执行到达try语句，然后执行try块{}内的保护段;
+3.如果在保护段执行期间没有引起异常，那么跟在try块后的catch子句就不执行，程序从try块后跟随的最后一个catch子句后面的语句继续执行下去
+4.throw抛出的异常类型与catch抓取的异常类型要一致；
+5.使用catch(...)可以捕获所有类型的异常
+```c
+int main(){
+    try {
+        OpenFile();
+    }
+    catch (const char* msg) {
+        std::cerr << msg << std::endl;
+    }
+    catch (const int err){
+        std::cerr << "Error code:"<< err << std::endl;
+    }
+    catch (...){        // 可以捕获所有异常
+        std::cerr << "ERROR!" << std::endl;
+    }
+    return 0;
+}
+```
+
+## 18.3 代码示例（使用C++的Exception类及自己定义的异常类）
+```c
+#include<iostream>
+#include<exception>
+using namespace std;
+
+const string errorCode = "I don't like this number.";
+
+// 定义自己的异常处理类
+class MyException : public logic_error {
+public:
+    explicit MyException(const string& s = errorCode) :logic_error(s) {}
+};
+
+int main() {
+    int input;
+    while (1) {
+        try {
+            cout << "Please type in a number between 1 and 100." << endl;
+            cin >> input;
+            if (!cin.good()) {
+                cin.clear();
+                cin.ignore();
+                throw invalid_argument("The input should be a number!");
+            }
+            if (input >= 100)
+                throw length_error("The input should be less than 100!");
+            if (input < 0)
+                throw out_of_range("The input should be Non-negative number!");
+            if (input == 44)
+                throw MyException();
+            cout << "Your input is " << input << ". there isn't error\n";
+        }
+        catch (invalid_argument e) {
+            cout << "*********************************" << endl;
+            cout << "There is an invalid argument error occured" << endl;
+            cout << "info:" << e.what() << endl;
+            cout << "*********************************" << endl;
+        }
+        catch (length_error e) {
+            cout << "*********************************" << endl;
+            cout << "There is a length error occured" << endl;
+            cout << "info:" << e.what() << endl;
+            cout << "*********************************" << endl;
+        }
+        catch (out_of_range e) {
+            cout << "*********************************" << endl;
+            cout << "There is an out of range error occured" << endl;
+            cout << "info:" << e.what() << endl;
+            cout << "*********************************" << endl;
+        }
+        catch (MyException e) {
+            cout << "*********************************" << endl;
+            cout << "There is an error occured" << endl;
+            cout << "info:" << e.what() << endl;
+            cout << "*********************************" << endl;
+        }
+        catch (exception e) {
+            cout << "*********************************" << endl;
+            cout << "There is an undefined error occured" << endl;
+            cout << "info:" << e.what() << endl;
+            cout << "*********************************" << endl;
+        }
+        cout << endl;
+    }
+    return 0;
+}
+```
