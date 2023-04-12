@@ -142,6 +142,7 @@ $ rosrun turtlesim turtle_teleop_key
 ->之后可以通过方向键控制海龟移动，至此安装成功
 
 ## （三）编译iDFusion
+
 $ source prepare.sh
 $ mkdir build
 $ cd build
@@ -156,11 +157,47 @@ $ mkdir build
 $ cd build
 $ cmake ..
 $ cmake --build .
+
 2、The following variables are used in this project, but they are set to NOTFOUND.
 原因：cmake版本落后，安装最新版本
 操作：
 ->备份cmake旧版
 $ which cmake
-# /usr/bin/cmake
+\# /usr/bin/cmake
 $ cd /usr/bin
 $ sudo mv cmake cmake_bak
+->安装最新版cmake
+$ sudo snap install cmake --classic
+
+3、Could not find REALSENSE2_FOUND using the following names: realsense2
+原因：缺少realsense2
+操作：
+->注册公钥
+$ sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-key F6E65AC044F831AC80A06380C8B3A55A6F3EFCDE || sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-key F6E65AC044F831AC80A06380C8B3A55A6F3EFCDE
+->添加源
+$ sudo add-apt-repository "deb https://librealsense.intel.com/Debian/apt-repo $(lsb_release -cs) main" -u
+->安装包
+$ sudo apt-get install librealsense2-dkms
+$ sudo apt-get install librealsense2-utils
+$ sudo apt-get install librealsense2-dev
+$ sudo apt-get install librealsense2-dbg
+->测试安装
+$ realsense-viewer      #出现可视化界面
+$ modinfo uvcvideo | grep "version:"
+*version:        1.1.2.realsense-1.3.18*
+*srcversion:     51A4A0210E91BE50A7BA2BB*
+
+4、出现以上报错的原因是因为prepare.sh没有执行成功，由于在prepare.sh中编译选项使用的是make -j，同时编译多条指令，导致系统崩掉（虚拟机性能受阻），只需将所有的-j去掉，便会安装所有的外部依赖。
+
+5、"SOPHUS_INCLUDE_DIR-NOTFOUND"
+原因：sophus的目录未找到 
+操作：在CMakeList.txt中set一下SOPHUS_INCLUDE_DIR的路径
+```shell
+set(OPENNI2_LIBRARY "/usr/lib/libOpenNI2.so")
+set(OPENNI2_INCLUDE_DIR "/usr/include/openni2")
+set(SOPHUS_INCLUDE_DIR "/home/jiguotong/Projects/Github/iDFusion/third_party_library/Sophus;/home/jiguotong/Projects/Github/iDFusion/third_party_library/Sophus/sophus;")
+```
+
+6、报错No rule to make target '/opt/ros/kinetic/lib/libmessage_filters.so'
+原因：此项目依赖的ros环境是kinetic，需要重新安装Ubuntu16.04并且安装与16.04对应的kinetic
+:blush::blush::blush:
