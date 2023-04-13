@@ -201,3 +201,61 @@ set(SOPHUS_INCLUDE_DIR "/home/jiguotong/Projects/Github/iDFusion/third_party_lib
 6、报错No rule to make target '/opt/ros/kinetic/lib/libmessage_filters.so'
 原因：此项目依赖的ros环境是kinetic，需要重新安装Ubuntu16.04并且安装与16.04对应的kinetic
 :blush::blush::blush:
+
+## （四）ROS kinetic安装配置
+与melodic过程一致，只需要将命令中的melodic替换为kinetic即可
+## （五）二度编译iDFusion
+->备份iDFusion项目
+$ cp -r iDFusion iDFusion_bak
+$ cd iDFusion
+将prepare.sh中的所有make -j全部替换为make，执行该脚本
+$ source prepare.sh
+$ mkdir build
+$ cd build
+修改一些出错的CMake相关文件：
+1、将CMakeLists.txt中的OpenCV_DIR OPENNI2_LIBRARY OPENNI2_INCLUDE_DIR REALSENSE_INCLUDE_DIRS设置正确
+```cmake
+set(OpenCV_DIR "/usr/include/opencv")
+set(OPENNI2_LIBRARY "/usr/lib/libOpenNI2.so")
+set(OPENNI2_INCLUDE_DIR "/usr/include/openni2")
+set(REALSENSE_INCLUDE_DIRS "/home/jiguotong/Projects/Github/iDFusion/third_party_library/librealsense-master/include")
+```
+相应的，在下方添加realsense的库目录
+```cmake
+include_directories(${REALSENSE_INCLUDE_DIRS})
+```
+2、将FindSophus.cmake文件中的内容改为以下
+```cmake
+if (SOPHUS_INCLUDE_DIR)
+else (SOPHUS_INCLUDE_DIR)
+  find_path(SOPHUS_INCLUDE_DIR NAMES sophus
+      HINTS ${CMAKE_CURRENT_SOURCE_DIR}/third_party_library/Sophus
+    )
+endif(SOPHUS_INCLUDE_DIR)
+
+```
+->执行cmake命令
+$ cmake ..
+->执行make命令
+$ make
+->执行ros
+$ roscore
+->新开终端，执行af（路径在iDFusion/build下）
+./af
+->开启测试
+rosbag play xxx.bag
+其中，.bag文件可由以下步骤生成：
+```shell
+->第一个终端
+$ roscore
+->第二个终端
+$ rosrun turtlesim turtlesim_node
+->第三个终端
+$ rosrun turtlesim turtle_teleop_key
+->第四个终端
+$ cd /home/jiguotong/Projects
+$ mkdir bagfile
+$ cd bagfile
+$ rosbag record -a
+之后点到第三个终端，控制小海龟移动，之后在第四个终端ctrl+c，会将录制的.bag文件存在当前文件夹下
+```
