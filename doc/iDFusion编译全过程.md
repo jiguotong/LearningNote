@@ -259,3 +259,28 @@ $ cd bagfile
 $ rosbag record -a
 之后点到第三个终端，控制小海龟移动，之后在第四个终端ctrl+c，会将录制的.bag文件存在当前文件夹下
 ```
+
+## （六）搭建VS2019跨平台编写和调试Linux C/C++程序环境
+### 1.在虚拟机ubuntu上配置
+->安装一系列工具
+$ sudo apt-get install openssh-server g++ gdb gdbserver
+->修改ssh登录的配置，即/etc/ssh/sshd_config文件，修改为允许root登陆，可以执行命令
+$ sudo vim /etc/ssh/sshd_config
+将PermitRootLogin这一项改为yes
+->重启ssh服务
+$ sudo service ssh restart
+
+### 2.在windows下面配置
+->在vs2019获取工具和功能————添加“使用C++的Linux开发”
+->添加新项目（C++ linux 控制台）
+->工具-选项-跨平台中添加远程linux，填写目标ip等信息后，运行按钮上就有了ip地址
+![1681440506614](image/iDFusion编译全过程/1681440506614.png)
+->运行，可在右下角看到Linux控制窗口的输出信息
+![1681440690959](image/iDFusion编译全过程/1681440690959.png)
+
+### 3.
+
+### 4.问题记录
+- 附加库路径只能是绝对路径，比如/home/jiguotong/projects/third_party_library/lib
+不能采用$(RemoteRootDir)/third_party_library/lib的方式，而附加包含目录就可以这样写，原因未知
+- 
