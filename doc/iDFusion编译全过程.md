@@ -190,8 +190,9 @@ $ modinfo uvcvideo | grep "version:"
 4、出现以上报错的原因是因为prepare.sh没有执行成功，由于在prepare.sh中编译选项使用的是make -j，同时编译多条指令，导致系统崩掉（虚拟机性能受阻），只需将所有的-j去掉，便会安装所有的外部依赖。
 
 5、"SOPHUS_INCLUDE_DIR-NOTFOUND"
-原因：sophus的目录未找到 
+原因：sophus的目录未找到
 操作：在CMakeList.txt中set一下SOPHUS_INCLUDE_DIR的路径
+
 ```shell
 set(OPENNI2_LIBRARY "/usr/lib/libOpenNI2.so")
 set(OPENNI2_INCLUDE_DIR "/usr/include/openni2")
@@ -200,11 +201,14 @@ set(SOPHUS_INCLUDE_DIR "/home/jiguotong/Projects/Github/iDFusion/third_party_lib
 
 6、报错No rule to make target '/opt/ros/kinetic/lib/libmessage_filters.so'
 原因：此项目依赖的ros环境是kinetic，需要重新安装Ubuntu16.04并且安装与16.04对应的kinetic
-:blush::blush::blush:
+😊😊😊
 
 ## （四）ROS kinetic安装配置
+
 与melodic过程一致，只需要将命令中的melodic替换为kinetic即可
+
 ## （五）二度编译iDFusion
+
 ->备份iDFusion项目
 $ cp -r iDFusion iDFusion_bak
 $ cd iDFusion
@@ -214,17 +218,22 @@ $ mkdir build
 $ cd build
 修改一些出错的CMake相关文件：
 1、将CMakeLists.txt中的OpenCV_DIR OPENNI2_LIBRARY OPENNI2_INCLUDE_DIR REALSENSE_INCLUDE_DIRS设置正确
+
 ```cmake
 set(OpenCV_DIR "/usr/include/opencv")
 set(OPENNI2_LIBRARY "/usr/lib/libOpenNI2.so")
 set(OPENNI2_INCLUDE_DIR "/usr/include/openni2")
 set(REALSENSE_INCLUDE_DIRS "/home/jiguotong/Projects/Github/iDFusion/third_party_library/librealsense-master/include")
 ```
+
 相应的，在下方添加realsense的库目录
+
 ```cmake
 include_directories(${REALSENSE_INCLUDE_DIRS})
 ```
+
 2、将FindSophus.cmake文件中的内容改为以下
+
 ```cmake
 if (SOPHUS_INCLUDE_DIR)
 else (SOPHUS_INCLUDE_DIR)
@@ -234,6 +243,7 @@ else (SOPHUS_INCLUDE_DIR)
 endif(SOPHUS_INCLUDE_DIR)
 
 ```
+
 ->执行cmake命令
 $ cmake ..
 ->执行make命令
@@ -245,6 +255,7 @@ $ roscore
 ->开启测试
 rosbag play xxx.bag
 其中，.bag文件可由以下步骤生成：
+
 ```shell
 ->第一个终端
 $ roscore
@@ -261,7 +272,9 @@ $ rosbag record -a
 ```
 
 ## （六）搭建VS2019跨平台编写和调试Linux C/C++程序环境
+
 ### 1.在虚拟机ubuntu上配置
+
 ->安装一系列工具
 $ sudo apt-get install openssh-server g++ gdb gdbserver
 ->修改ssh登录的配置，即/etc/ssh/sshd_config文件，修改为允许root登陆，可以执行命令
@@ -271,6 +284,7 @@ $ sudo vim /etc/ssh/sshd_config
 $ sudo service ssh restart
 
 ### 2.在windows下面配置
+
 ->在vs2019获取工具和功能————添加“使用C++的Linux开发”
 ->添加新项目（C++ linux 控制台）
 ->工具-选项-跨平台中添加远程linux，填写目标ip等信息后，运行按钮上就有了ip地址
@@ -278,9 +292,21 @@ $ sudo service ssh restart
 ->运行，可在右下角看到Linux控制窗口的输出信息
 ![1681440690959](image/iDFusion编译全过程/1681440690959.png)
 
-### 3.
+### 3.iDFusion的配置
+
+（1）添加编译选项
+项目属性->c/c++->命令行
+添加：-O3 -msse2 -msse3  -msse4.1 -Wall -std=c++14  -msse -msse2 -msse3 -msse4 -msse4.1 -msse4.2 -ftree-vectorize -lboost_system -lpthread -lboost_thread -lboost_filesystem -mavx2
+（2）
 
 ### 4.问题记录
+
 - 附加库路径只能是绝对路径，比如/home/jiguotong/projects/third_party_library/lib
-不能采用$(RemoteRootDir)/third_party_library/lib的方式，而附加包含目录就可以这样写，原因未知
+  不能采用$(RemoteRootDir)/third_party_library/lib的方式，而附加包含目录就可以这样写，原因未知
+- 报错：DSO missing from command line原因及解决办法：
+  原因：共享库配置不正确
+  解决方法：包含对应的共享库
+- 报错：what(): Pangolin X11: Failed to open X display
+  原因：远程ssh连接不能显示图形化界面
+  解决方法：暂未解决
 - 
