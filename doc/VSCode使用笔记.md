@@ -1,3 +1,14 @@
+# 二、快捷键大全
+## Linux
+Ctrl+Alt+-              返回代码上一个位置
+Alt+O                   切换对应我头文件/源文件
+Ctrl+K,Ctrl+C           代码块注释
+Ctrl+K,Ctrl+U           代码块取消注释
+Ctrl+Shift+K            删除当前行
+Ctrl+K,Ctrl+0           折叠所有代码块
+Ctrl+K,Ctrl+J           展开所有代码块
+Ctrl+K,R                打开当前文件所在文件夹
+Ctrl+K,Ctrl+F           格式化选中的代码
 # 十、功能大全
 ## (一)必备插件
 compareit               #快速比较两个文件
