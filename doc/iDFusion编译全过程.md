@@ -309,4 +309,55 @@ $ sudo service ssh restart
 - 报错：what(): Pangolin X11: Failed to open X display
   原因：远程ssh连接不能显示图形化界面
   解决方法：暂未解决
-- 
+
+
+## (七)iDFusion代码调试
+### (1)配置launch.json配置文件
+```json
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "(gdb) Launch",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/af",
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}/build",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "miDebuggerPath": "/usr/bin/gdb",
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                },
+                {
+                    "description": "Set Disassembly Flavor to Intel",
+                    "text": "-gdb-set disassembly-flavor intel",
+                    "ignoreFailures": true
+                }
+            ]
+        }
+    ]
+}
+```
+### (2)修改相机参数
+$ sudo gedit /opt/ros/kinetic/share/realsense2_camera/launch/rs_camera.launch
+### (3)运行依赖平台
+-> 终端1 启动ros平台
+$ roscore
+-> 终端2 启动Realsense的ros节点
+$ roslaunch realsense2_camera rs_camera.launch align_depth:=true
+
+-> 终端3 查看topic
+$ rostopic list
+-> 终端4 监听topic流量
+$ rostopic bw xxxxx 
+$ rostopic bw /camera/color/image_raw
