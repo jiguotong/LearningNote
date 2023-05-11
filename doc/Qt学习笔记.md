@@ -70,4 +70,17 @@ int y = globalPos.y() + (parentWidget->height() - this->height()) / 2;//y坐标
 this->move(x, y);//窗口移动
 ```
 
-## 6.
+## 6.状态栏使用
+一般状态信息
+```c
+QString posLabel = new QLabel(bar_status);
+bar_status->addWidget(posLabel);
+posLabel->setText(QString("Row:%1 Col:%2\t\t")
+    .arg(row).arg(col));
+```
+
+永久状态信息
+```c
+QLabel* perLabel = new QLabel(QStringLiteral("建设美丽祖国"), this);
+bar_status->insertPermanentWidget(1, perLabel); //现实永久信息
+```
