@@ -310,9 +310,10 @@ $ sudo service ssh restart
   原因：远程ssh连接不能显示图形化界面
   解决方法：暂未解决
 
-
 ## (七)iDFusion代码调试
+
 ### (1)配置launch.json配置文件
+
 ```json
 {
     // Use IntelliSense to learn about possible attributes.
@@ -348,9 +349,13 @@ $ sudo service ssh restart
     ]
 }
 ```
+
 ### (2)修改相机参数
+
 $ sudo gedit /opt/ros/kinetic/share/realsense2_camera/launch/rs_camera.launch
+
 ### (3)运行依赖平台
+
 -> 终端1 启动ros平台
 $ roscore
 -> 终端2 启动Realsense的ros节点
@@ -359,5 +364,427 @@ $ roslaunch realsense2_camera rs_camera.launch align_depth:=true
 -> 终端3 查看topic
 $ rostopic list
 -> 终端4 监听topic流量
-$ rostopic bw xxxxx 
+$ rostopic bw xxxxx
 $ rostopic bw /camera/color/image_raw
+
+# 二、Windows下编译iDFusion
+
+## （一）实验环境基础
+
+->基础：
+windows10
+Visual studio 2019
+Git
+CMake
+OpenNI
+
+->目标：
+ROS melodic
+librealsense v2.50.0
+realsense-ros build2.3.2
+
+## （二）ROS melodic 安装配置
+
+参考资料：
+http://wiki.ros.org/Installation/Windows
+https://zhuanlan.zhihu.com/p/414874250
+
+### step1:安装包管理工具Chocolatey
+
+打开vs2019自带的命令行工具x64 Native Tools Command Prompt for VS 2019，以管理员身份运行
+输入以下安装命令
+
+```shell
+@"%SystemRoot%\System32\WindowsPowerShell\v1.0\powershell.exe" -NoProfile -InputFormat None -ExecutionPolicy Bypass -Command "iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))" && SET "PATH=%PATH%;%ALLUSERSPROFILE%\chocolatey\bin"
+```
+
+可以使用choco -v查看是否安装成功
+![1684868954576](image/iDFusion编译全过程/1684868954576.png)
+
+### step2:安装ros-full
+
+依次在上述命令行工具中输入
+
+```bash
+mkdir c:\opt\chocolatey
+set ChocolateyInstall=c:\opt\chocolatey
+choco source add -n=ros-win -s="https://aka.ms/ros/public" --priority=1
+choco upgrade ros-melodic-desktop_full -y --execution-timeout=0
+```
+
+静静等待安装… 中间会弹出setup安装界面，不用管
+成功之后，将c:\opt\ros\melodic\x64\bin 添加进系统环境变量
+
+### step3:测试ros是否安装成功
+
+-> cd c:\opt\ros\melodic\x64
+-> setup.bat
+-> roscore
+![1684907599616](image/iDFusion编译全过程/1684907599616.png)
+出现上图即成功
+
+## （三）librealsense 源码编译
+
+### step1:下载librealsense源码
+
+从https://github.com/IntelRealSense/librealsense/releases/tag/v2.50.0 下载v2.50.0的源码
+
+### step2:CMake构建
+
+BUILD_WITH_STATIC_CRT取消勾选！！！
+BUILD_OPENNI2_BINDINGS选项要勾选！！！
+CMAKE_INSTALL_PREFIX改为D:/thirdLibrary/librealsense
+直接Configure -> Generate -> Open project
+
+### step3:VS编译
+
+release x64模式下 生成解决方案（如果有个别项目有问题，需要对症解决一下）
+（中途libcurl这个项目生成有问题，关掉网络代理再生成就好了）
+（rs2_drive是个重要的项目，必须要有，因为后来经过对比，这个在cmake之后没有的话roslaunch会出错）
+
+50个项目除了INSTALL和unintsall之外都生成成功
+![1684992739740](image/iDFusion编译全过程/1684992739740.png)
+右键INSTALL项目，生成，以此安装到上面指定的CMAKE_INSTALL_PREFIX路径下
+
+## （四）realsense-ros 源码编译
+
+### step1:编译realsense-ros
+
+打开Windows Powershell
+
+```shell
+mkdir -p c:/catkin_ws/src
+cd c:/catkin_ws/src/
+git clone https://github.com/pal-robotics/ddynamic_reconfigure.git
+git clone https://github.com/IntelRealSense/realsense-ros.git
+cd realsense-ros
+git checkout 2.3.2		#librealsense版本为v2.50.0，经查阅，realsense-ros需要为2.3.2版本，两者之间有严格的对应关系
+cd ..
+catkin_init_workspace
+cd ..
+catkin_make clean			#这一步报错，需要先在terminal中运行c:\opt\ros\melodic\x64\setup.bat
+catkin_make -DCATKIN_ENABLE_TESTING=False -DCMAKE_BUILD_TYPE=Release
+catkin_make install		#安装成功之后会在catkin_ws/install目录下有所有的安装文件，成功
+```
+
+过程中出错：
+![1684981679676](image/iDFusion编译全过程/1684981679676.png)
+解决方法：
+打开源码realsense2_camera文件夹下的CMakeList.txt，在第7行加入
+
+```shell
+set(realsense2_DIR "D:/thirdLibrary/librealsense/lib/cmake/realsense2") #这是之前编译好的librealsense
+```
+
+### step2:配置ros+realsense终端
+
+打开terminal，进行设置
+![1684980365960](image/iDFusion编译全过程/1684980365960.png)
+添加新配置文件 -> 新建空配置文件
+名称设置为ros_realsense
+命令行中输入
+
+```shell
+C:\Windows\System32\cmd.exe /k "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\Common7\Tools\VsDevCmd.bat" -arch=amd64 -host_arch=amd64&& set ChocolateyInstall=c:\opt\chocolatey&& c:\opt\ros\melodic\x64\setup.bat && c:\catkin_ws\devel\setup.bat
+```
+
+保存
+
+## （五）iDFusion依赖环境配置
+
+### 1、open_chisel的编译
+
+①CMakeList.txt里面
+string(REGEX MATCHALL "avx2" AVX_STRING ${CPU_INFO})
+改为
+string(REGEX MATCHALL "avx2" AVX_STRING "${CPU_INFO}")
+
+## （六）iDFusion调试过程（序号不分报错先后顺序）
+
+0、项目属性
+附加包含目录
+```
+C:\opt\ros\melodic\x64\include
+C:\opt\ros\melodic\x64\include\eigen3
+C:\opt\ros\melodic\x64\include\boost-1_66
+C:\opt\ros\melodic\x64\include\xmlrpcpp
+C:\opt\ros\melodic\x64\tools\vcpkg\ports\fontconfig\include\win32
+..\CHISEL\src
+..\GCSLAM\peac
+..\third_party_library\Sophus
+..\third_party_library\pthread\include
+..\third_party_library\OpenNI2\Include
+..\third_party_library\librealsense\include
+..\third_party_library\pangolin\Pangolin_Release_x64_MD\Pangolin\include
+```
+链接器依赖项：
+```
+C:\opt\ros\melodic\x64\lib\opencv_core341.lib
+C:\opt\ros\melodic\x64\lib\opencv_imgproc341.lib
+C:\opt\ros\melodic\x64\lib\opencv_imgcodecs341.lib
+C:\opt\ros\melodic\x64\lib\opencv_features2d341.lib
+C:\opt\ros\melodic\x64\lib\opencv_highgui341.lib
+C:\opt\ros\melodic\x64\lib\roscpp.lib
+C:\opt\ros\melodic\x64\lib\rostime.lib
+C:\opt\ros\melodic\x64\lib\roslib.lib
+C:\opt\ros\melodic\x64\lib\rosconsole.lib
+C:\opt\ros\melodic\x64\lib\console_bridge.lib
+C:\opt\ros\melodic\x64\lib\rosconsole_bridge.lib
+C:\opt\ros\melodic\x64\lib\rosconsole_log4cxx.lib
+C:\opt\ros\melodic\x64\lib\rosconsole_backend_interface.lib
+C:\opt\ros\melodic\x64\lib\roscpp_serialization.lib
+C:\opt\ros\melodic\x64\lib\rosbag.lib
+C:\opt\ros\melodic\x64\lib\rosbag_storage.lib
+C:\opt\ros\melodic\x64\lib\rosbag_default_encryption_plugins.lib
+C:\opt\ros\melodic\x64\lib\roslz4.lib
+C:\opt\ros\melodic\x64\lib\rospack.lib
+C:\opt\ros\melodic\x64\lib\rosparam_shortcuts.lib
+C:\opt\ros\melodic\x64\lib\ros_filter.lib
+C:\opt\ros\melodic\x64\lib\ros_filter_utilities.lib
+C:\opt\ros\melodic\x64\lib\ros_type_introspection.lib
+C:\opt\ros\melodic\x64\lib\ros_robot_localization_listener.lib
+C:\opt\ros\melodic\x64\lib\freeglut.lib
+C:\opt\ros\melodic\x64\lib\cpp_common.lib
+C:\opt\ros\melodic\x64\lib\log4cxx.lib
+C:\opt\ros\melodic\x64\lib\xmlrpcpp.lib
+C:\opt\ros\melodic\x64\lib\cv_bridge.lib
+C:\opt\ros\melodic\x64\lib\message_filters.lib
+C:\opt\ros\melodic\x64\lib\boost_regex-vc141-mt-x64-1_66.lib
+C:\opt\ros\melodic\x64\lib\boost_system-vc141-mt-x64-1_66.lib
+C:\opt\ros\melodic\x64\lib\boost_thread-vc141-mt-x64-1_66.lib
+C:\opt\ros\melodic\x64\lib\boost_chrono-vc141-mt-x64-1_66.lib
+C:\opt\ros\melodic\x64\lib\boost_date_time-vc141-mt-x64-1_66.lib
+C:\opt\ros\melodic\x64\lib\boost_atomic-vc141-mt-x64-1_66.lib
+C:\opt\ros\melodic\x64\lib\boost_filesystem-vc141-mt-x64-1_66.lib
+..\CHISEL\lib\chisel.lib
+..\third_party_library\OpenNI2\Lib\OpenNI2.lib
+..\third_party_library\librealsense\lib\realsense2.lib
+..\third_party_library\pangolin\Pangolin_Release_x64_MD\Pangolin\lib\pangolin.lib
+..\third_party_library\pangolin\Pangolin_Release_x64_MD\Pangolin\external\glew\lib\glew32s.lib
+..\third_party_library\pangolin\Pangolin_Release_x64_MD\Pangolin\external\libjpeg\lib\jpeg.lib
+..\third_party_library\pangolin\Pangolin_Release_x64_MD\Pangolin\external\libpng\lib\libpng16_static.lib
+..\third_party_library\pangolin\Pangolin_Release_x64_MD\Pangolin\external\zlib\lib\zlibstatic.lib
+..\third_party_library\pthread\lib\x64\pthreadVC2.lib
+OpenGL32.lib
+mf.lib
+mfplat.lib
+mfreadwrite.lib
+mfuuid.lib
+strmiids.lib
+comdlg32.lib
+advapi32.lib
+ws2_32.lib
+shell32.lib
+```
+1、项目属性 -> 配置属性 -> 高级 -> 全程序优化
+要从“无全程序优化”改为“使用链接时间代码生成”，否则在使用pangolin::CreateWindowAndBind的时候会出错崩溃。
+2、error LNK2019: 无法解析的外部符号 “void __cdecl boost::throw_exception(class std::exception const &)
+解决方法：https://blog.csdn.net/wu10188/article/details/124709076
+
+3、error C2872: “ACCESS_MASK”: 不明确的符号
+原因：opencv3.0或者3.1的using namespace cv和windows.h中ACCESS_MASK定义冲突。
+解决方案：注释掉所有的using namespace cv，然后在需要的地方写上cv::
+
+4、win32 gettimeofday替代方案
+https://blog.csdn.net/shan165310175/article/details/48933585
+
+5、涉及到sleep/usleep的问题
+解决方法：统一改为windows下的Sleep函数，注意参数单位，sleep是秒级，usleep是微妙级，Sleep是毫秒级。
+
+6、windows下配置pthread.h头文件的问题
+https://blog.csdn.net/baidu_34785556/article/details/98798351
+
+7、windows下配置dirent.h头文件的问题
+https://blog.csdn.net/qq_15751687/article/details/106465022
+
+8、Sophus提示不正交
+**原因**：Sophus::SE3d或者Sophus::SO3d的初始化会有一个isOrthogoal的精度检查
+https://blog.csdn.net/u013238941/article/details/129507499#comments_26491887
+**解决方法**：在初始化之前，先将旋转矩阵转变成四元数，然后归一化，再转成旋转矩阵，这样旋转矩阵能够通过正交检查。
+
+9、Visual Studio屏蔽警告
+https://blog.csdn.net/ZHAOJUNWEI08/article/details/84288189
+
+```c
+//原代码
+Sophus::SO3d SO3_R(matrix_r)
+//改后代码
+Eigen::Quaterniond tmp(matrix_r);
+tmp.normalize();
+Sophus::SO3d SO3_R(tmp.toRotationMatrix());
+```
+
+## （七）iDFusion运行
+
+### 1、修改roslaunch的配置文件
+
+找到catkin_ws下的src中的rs_camera.launch文件，备份一份。将内容改为以下：
+
+```launch
+<launch>
+  <arg name="serial_no"           default=""/>
+  <arg name="usb_port_id"         default=""/>
+  <arg name="device_type"         default=""/>
+  <arg name="json_file_path"      default=""/>
+  <arg name="camera"              default="camera"/>
+  <arg name="tf_prefix"           default="$(arg camera)"/>
+  <arg name="external_manager"    default="false"/>
+  <arg name="manager"             default="realsense2_camera_manager"/>
+  <arg name="output"              default="screen"/>
+  <arg name="respawn"              default="false"/>
+
+  <arg name="fisheye_width"       default="640"/>
+  <arg name="fisheye_height"      default="480"/>
+  <arg name="enable_fisheye"      default="false"/>
+
+  <arg name="depth_width"         default="640"/>
+  <arg name="depth_height"        default="480"/>
+  <arg name="enable_depth"        default="true"/>
+
+  <arg name="confidence_width"    default="640"/>
+  <arg name="confidence_height"   default="480"/>
+  <arg name="enable_confidence"   default="true"/>
+  <arg name="confidence_fps"      default="-1"/>
+
+  <arg name="infra_width"         default="640"/>
+  <arg name="infra_height"        default="480"/>
+  <arg name="enable_infra"        default="true"/>
+  <arg name="enable_infra1"       default="true"/>
+  <arg name="enable_infra2"       default="true"/>
+  <arg name="infra_rgb"           default="true"/>
+
+  <arg name="color_width"         default="640"/>
+  <arg name="color_height"        default="480"/>
+  <arg name="enable_color"        default="true"/>
+
+  <arg name="fisheye_fps"         default="-1"/>
+  <arg name="depth_fps"           default="30"/>
+  <arg name="infra_fps"           default="30"/>
+  <arg name="color_fps"           default="30"/>
+  <arg name="gyro_fps"            default="200"/>
+  <arg name="accel_fps"           default="200"/>
+  <arg name="enable_gyro"         default="true"/>
+  <arg name="enable_accel"        default="true"/>
+
+  <arg name="enable_pointcloud"         default="false"/>
+  <arg name="pointcloud_texture_stream" default="RS2_STREAM_COLOR"/>
+  <arg name="pointcloud_texture_index"  default="0"/>
+  <arg name="allow_no_texture_points"   default="false"/>
+  <arg name="ordered_pc"                default="false"/>
+
+  <arg name="enable_sync"               default="true"/>
+  <arg name="align_depth"               default="true"/>
+
+  <arg name="publish_tf"                default="true"/>
+  <arg name="tf_publish_rate"           default="0"/>
+
+  <arg name="filters"                   default=""/>
+  <arg name="clip_distance"             default="-2"/>
+  <arg name="linear_accel_cov"          default="0.01"/>
+  <arg name="initial_reset"             default="false"/>
+  <arg name="reconnect_timeout"         default="6.0"/>
+  <arg name="wait_for_device_timeout"   default="-1.0"/>
+  <arg name="unite_imu_method"          default=""/>
+  <arg name="topic_odom_in"             default="odom_in"/>
+  <arg name="calib_odom_file"           default=""/>
+  <arg name="publish_odom_tf"           default="true"/>
+
+  <arg name="stereo_module/exposure/1"  default="7500"/>
+  <arg name="stereo_module/gain/1"      default="16"/>
+  <arg name="stereo_module/exposure/2"  default="1"/>
+  <arg name="stereo_module/gain/2"      default="16"/>
+  
+  
+
+  <group ns="$(arg camera)">
+    <include file="$(find realsense2_camera)/launch/includes/nodelet.launch.xml">
+      <arg name="tf_prefix"                value="$(arg tf_prefix)"/>
+      <arg name="external_manager"         value="$(arg external_manager)"/>
+      <arg name="manager"                  value="$(arg manager)"/>
+      <arg name="output"                   value="$(arg output)"/>
+      <arg name="respawn"                  value="$(arg respawn)"/>
+      <arg name="serial_no"                value="$(arg serial_no)"/>
+      <arg name="usb_port_id"              value="$(arg usb_port_id)"/>
+      <arg name="device_type"              value="$(arg device_type)"/>
+      <arg name="json_file_path"           value="$(arg json_file_path)"/>
+
+      <arg name="enable_pointcloud"        value="$(arg enable_pointcloud)"/>
+      <arg name="pointcloud_texture_stream" value="$(arg pointcloud_texture_stream)"/>
+      <arg name="pointcloud_texture_index"  value="$(arg pointcloud_texture_index)"/>
+      <arg name="enable_sync"              value="$(arg enable_sync)"/>
+      <arg name="align_depth"              value="$(arg align_depth)"/>
+
+      <arg name="fisheye_width"            value="$(arg fisheye_width)"/>
+      <arg name="fisheye_height"           value="$(arg fisheye_height)"/>
+      <arg name="enable_fisheye"           value="$(arg enable_fisheye)"/>
+
+      <arg name="depth_width"              value="$(arg depth_width)"/>
+      <arg name="depth_height"             value="$(arg depth_height)"/>
+      <arg name="enable_depth"             value="$(arg enable_depth)"/>
+
+      <arg name="confidence_width"         value="$(arg confidence_width)"/>
+      <arg name="confidence_height"        value="$(arg confidence_height)"/>
+      <arg name="enable_confidence"        value="$(arg enable_confidence)"/>
+      <arg name="confidence_fps"           value="$(arg confidence_fps)"/>
+
+      <arg name="color_width"              value="$(arg color_width)"/>
+      <arg name="color_height"             value="$(arg color_height)"/>
+      <arg name="enable_color"             value="$(arg enable_color)"/>
+
+      <arg name="infra_width"              value="$(arg infra_width)"/>
+      <arg name="infra_height"             value="$(arg infra_height)"/>
+      <arg name="enable_infra"             value="$(arg enable_infra)"/>
+      <arg name="enable_infra1"            value="$(arg enable_infra1)"/>
+      <arg name="enable_infra2"            value="$(arg enable_infra2)"/>
+      <arg name="infra_rgb"                value="$(arg infra_rgb)"/>
+
+      <arg name="fisheye_fps"              value="$(arg fisheye_fps)"/>
+      <arg name="depth_fps"                value="$(arg depth_fps)"/>
+      <arg name="infra_fps"                value="$(arg infra_fps)"/>
+      <arg name="color_fps"                value="$(arg color_fps)"/>
+      <arg name="gyro_fps"                 value="$(arg gyro_fps)"/>
+      <arg name="accel_fps"                value="$(arg accel_fps)"/>
+      <arg name="enable_gyro"              value="$(arg enable_gyro)"/>
+      <arg name="enable_accel"             value="$(arg enable_accel)"/>
+
+      <arg name="publish_tf"               value="$(arg publish_tf)"/>
+      <arg name="tf_publish_rate"          value="$(arg tf_publish_rate)"/>
+
+      <arg name="filters"                  value="$(arg filters)"/>
+      <arg name="clip_distance"            value="$(arg clip_distance)"/>
+      <arg name="linear_accel_cov"         value="$(arg linear_accel_cov)"/>
+      <arg name="initial_reset"            value="$(arg initial_reset)"/>
+      <arg name="reconnect_timeout"        value="$(arg reconnect_timeout)"/>
+      <arg name="wait_for_device_timeout"  value="$(arg wait_for_device_timeout)"/>
+      <arg name="unite_imu_method"         value="$(arg unite_imu_method)"/>
+      <arg name="topic_odom_in"            value="$(arg topic_odom_in)"/>
+      <arg name="calib_odom_file"          value="$(arg calib_odom_file)"/>
+      <arg name="publish_odom_tf"          value="$(arg publish_odom_tf)"/>
+      <arg name="stereo_module/exposure/1" value="$(arg stereo_module/exposure/1)"/>
+      <arg name="stereo_module/gain/1"     value="$(arg stereo_module/gain/1)"/>
+      <arg name="stereo_module/exposure/2" value="$(arg stereo_module/exposure/2)"/>
+      <arg name="stereo_module/gain/2"     value="$(arg stereo_module/gain/2)"/>
+
+      <arg name="allow_no_texture_points"  value="$(arg allow_no_texture_points)"/>
+      <arg name="ordered_pc"               value="$(arg ordered_pc)"/>
+  
+    </include>
+  </group>
+</launch>
+```
+
+### 2、开启相机
+
+打开ros-realsense终端，输入
+roslaunch realsense2_camera rs_camera.launch align_depth:=true
+报错：
+
+```cmd
+1684994184.727220600 ERROR /camera/realsense2_camera_manager [D:\ws\src\nodelet_core\nodelet\src\loader.cpp:301(Loader::load)] [topics: /rosout] The error before refreshing the cache was: Failed to load library C:/catkin_ws/devel\bin/realsense2_camera.dll. Make sure that you are calling the PLUGINLIB_EXPORT_CLASS macro in the library code, and that names are consistent between this macro and your XML. Error string: Could not load library (Poco exception = C:/catkin_ws/devel\bin/realsense2_camera.dll)
+```
+
+出现这个问题不知道是什么原因，最后是重新换了工作空间的名字重新编译的realsense-ros工具包，最终可以roslaunch成功了，妈的。
+
+### 3、运行iDFusin程序
+
+ok!
