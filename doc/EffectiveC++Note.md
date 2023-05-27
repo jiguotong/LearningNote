@@ -54,6 +54,53 @@ Base &operator=(const Base&) = delete;
 
 ## 条款09：绝不在构造和析构过程中调用virtual函数
 
+## 条款10：令operator=返回一个reference to *this
+```c
+Widget& operator=(const Widget& rhs){
+    ...
+    return *this;
+}
+```
+```c
+class Test
+{
+ public: 
+    Test()
+    { 
+      return this;  //返回的当前对象的地址
+    }
+    Test&()
+    { 
+      return *this;  //返回的是当前对象本身
+    }
+    Test()
+    { 
+      return *this;   //返回的当前对象的克隆
+    }
+ private:  //...
+};
+```
+## 条款11：在operator= 中处理“自我赋值”（没看懂）
+
+## 条款12：复制对象时勿忘其每一个成分
+## 条款13：以对象管理资源
+智能指针防止内存泄漏
+
+## 条款14：在资源管理类中小心coping行为（没看懂）
+
+## 条款15：在资源管理类中提供对原始资源的访问（没看懂）
+
+## 条款16：成对使用new和delete时要采取相同形式
+```c
+Base *base = new Base;          //new一个对象指针
+delete base;                    //delete一个对象指针
+
+Base *base = new Base[10];      //new一个对象数组指针
+delete []base;                  //delete一个对象数组指针
+//C++ 的做法是在分配数组空间时多分配了 4 个字节的大小，专门保存数组的大小，在 delete [] 时就可以取出这个保存的数，就知道了需要调用析构函数多少次了。
+```
+
+## 条款17：以独立语句将newed对象置入智能指针（没看懂）
 ⭐
 ⭐
 ⭐
