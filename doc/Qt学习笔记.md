@@ -1,3 +1,7 @@
+# 五、QT中的线程
+## （一）初识线程
+
+## （二）
 # 十、问题汇总
 
 ## 1.设置窗口图标
@@ -83,4 +87,29 @@ posLabel->setText(QString("Row:%1 Col:%2\t\t")
 ```c
 QLabel* perLabel = new QLabel(QStringLiteral("建设美丽祖国"), this);
 bar_status->insertPermanentWidget(1, perLabel); //现实永久信息
+```
+
+## 7.防止软件二次打开
+```c
+#include <QMutex>
+#include <QSharedMemory>
+#inlcude <QMessageBox>
+int main(int argc, char *argv[]){
+    QApplication a(argc,argv);
+
+    // 设置一个互斥量
+    QMutex mutex;
+    mutex.lock();// 开启临界区
+    // 在临界区内创建SingleApp的共享内存块
+    static QSharedMemory *shareMem = new QSharedMemory("SingleApp");
+    if(!shareMem.create(1)){
+        mutex.unlock();// 关闭临界区
+        QMessageBox::information(0, "Tip", "App has been running!");
+        return -1;  // 创建失败，说明已有一个程序在运行，退出当前程序
+    }
+    mutex.unlock();// 关闭临界区
+    //继续执行其他代码
+    ······
+    return a.exec();
+}
 ```
