@@ -1,0 +1,202 @@
+# torch函数应用
+
+1、torch.argmax(input: Tensor, dim: Optional[_int]=None, keepdim: _bool=False, *, out: Optional[Tensor]=None)
+返回指定维度最大值的序号（索引）。实际就是以该维度为标准划分为各个队伍，不个队伍的同一位置进行pk，选出最大的值所在的索引。
+若x.shape(2,3,4),y=torch.argmax(x,dim=0),则y.shape(3,4)
+若x.shape(2,3,4),y=torch.argmax(x,dim=1),则y.shape(2,4)
+若x.shape(2,3,4),y=torch.argmax(x,dim=2),则y.shape(2,3)
+
+```python
+import torch
+
+x = torch.rand(3,2,3)
+print(x)
+y0 = torch.argmax(x, dim=0)
+print(y0)
+y1 = torch.argmax(x, dim=1)
+print(y1)
+y2 = torch.argmax(x, dim=2)
+print(y2)
+```
+
+![1685685696830](image/视频分割笔记/1685685696830.png)
+
+2、DataLoader类
+数据加载器，结合了数据集和取样器，并且可以提供多个线程处理数据集。
+在训练模型时使用到此函数，用来把训练数据分成多个小组 ，此函数每次抛出一组数据。直至把所有的数据都抛出。就是做一个数据的初始化。
+![1685699996707](image/视频分割笔记/1685699996707.png)
+
+```python
+"""
+    批训练，把数据变成一小批一小批数据进行训练。
+    DataLoader就是用来包装所使用的数据，每次抛出一批数据
+"""
+import torch
+import torch.utils.data as Data
+
+BATCH_SIZE = 5
+
+x = torch.linspace(1, 10, 10)
+y = torch.linspace(10, 1, 10)
+# 把数据放在数据库中
+torch_dataset = Data.TensorDataset(x, y)
+loader = Data.DataLoader(
+    # 从数据库中每次抽出batch size个样本
+    dataset=torch_dataset,
+    batch_size=BATCH_SIZE,
+    shuffle=True,
+    num_workers=2,
+)
+
+
+def show_batch():
+    for epoch in range(3):
+        for step, (batch_x, batch_y) in enumerate(loader):
+            # training
+            print("steop:{}, batch_x:{}, batch_y:{}".format(step, batch_x, batch_y))
+
+
+if __name__ == '__main__':
+    show_batch()
+```
+
+3、torch.cat()和torch.stack()用法
+都是对张量进行拼接操作
+torch.cat(): 用于连接两个相同大小的张量，不扩展维度
+torch.stack(): 用于连接两个相同大小的张量，并扩展维度
+```python
+import torch
+x=torch.zeros(2,3)
+y=torch.ones(2,3)
+print(x)
+print(y)
+print('-------------------------torch.cat---------------------------')
+# torch.cat
+a=torch.cat([x,y],dim=0)
+print(a.shape)
+print(a)
+
+print('-------------------------troch.stack---------------------------')
+# torch.stack
+b = torch.stack((x,y),dim=0)
+print(b.shape)
+print(b)
+
+print('--------------------------end--------------------------')
+```
+结果如图：![1686561179317](image/视频分割笔记/1686561179317.png)
+https://github.com/suhwan-cho/TMO
+
+## 2.10 PyTorch中数据的输入和预处理
+1、torch.utils.data.DataLoader()
+```python
+DataLoader(dataset, batch_size=1, shuffle=False, sampler=None, batch_sampler=None, num_workers=0, collate_fn=None, pin_memory=False, drop_last=False, timeout=0, work_init_fn=None)
+```
+
+2、python的类中函数__getitem__的作用及使用方法
+__getitem__方法的作用是，可以将类中的数据像数组一样读出，操作符为[]，使用索引访问元素
+```python
+class Test():
+    def __init__(self):
+        self.a=[1,2,3,4,5]
+    def __getitem__(self,idx):
+        return(self.a[idx])
+data=Test()
+print(data[2])
+
+--------------
+>>>3
+
+class Test():
+    def __init__(self):
+        self.a=[1,2,3,4,5]
+    def __getitem__(self,idx):
+        return(self.a)
+data=Test()
+print(data[2])
+
+--------------
+>>>[1,2,3,4,5]
+```
+
+3、python的内置__getitem__方法与PyTorch的Dataloader结合使用：
+https://blog.csdn.net/virus111222/article/details/128210099
+过程剖析：
+（1）定义一个数据集dataset，要重写__len__函数和__getitem__函数，因为后面要用遍历dataloader（需要用索引获取数组）
+（2）定义一个dataloader，用来封装该数据集，并且指定batch_size以及是否打乱顺序等
+（3）遍历dataloader时，比如batch_size等于4，那么dataloader就找4个下标（如果没打乱 就是 0 1 2 3 / 4 5 6 7，如果打乱，就会随机下标），去dataset里面通过这4个下标idx从__getitem__获取相应的数据(也可以选择不使用下标)
+```python
+import torch
+import numpy as np
+from torch.utils.data import Dataset
+ 
+# 创建MyDataset类
+class MyDataset(Dataset):
+    def __init__(self, x, y):
+        self.data = torch.from_numpy(x).float()
+        self.label = torch.LongTensor(y)
+ 
+    def __getitem__(self, idx):
+        print("当前idx:{}".format(idx))
+        return self.data[idx], self.label[idx], idx
+ 
+    def __len__(self):
+        return len(self.data)
+ 
+Train_data = np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9], [10, 11, 12]])
+Train_label = np.array([10, 11, 12, 13])
+TrainDataset = MyDataset(Train_data, Train_label) # 创建实例对象
+print('len:', len(TrainDataset))
+ 
+# 创建DataLoader
+loader = torch.utils.data.DataLoader(
+    dataset=TrainDataset,
+    batch_size=2,
+    shuffle=True,
+    num_workers=0,
+    drop_last=False)
+ 
+# 按batchsize打印数据
+for batch_idx, (data, label, index) in enumerate(loader):
+    print('batch_idx:',batch_idx, '\ndata:',data, '\nlabel:',label, '\nindex:',index)
+    print('---------')
+```
+
+输出结果
+```python
+len: 4
+当前idx:0
+当前idx:3
+batch_idx: 0 
+data: tensor([[ 1.,  2.,  3.],
+        [10., 11., 12.]]) 
+label: tensor([10, 13]) 
+index: tensor([0, 3])
+---------
+当前idx:1
+当前idx:2
+batch_idx: 1 
+data: tensor([[4., 5., 6.],
+        [7., 8., 9.]]) 
+label: tensor([11, 12]) 
+index: tensor([1, 2])
+---------
+```
+
+## 2.11 PyTorch模型的保存和加载
+```python
+torch.save(obj, f, pickle_module=pickle, pickle_protocol=2)
+torch.load(f, map_location=None, pickle_module=pickle, **pickle_load_args)
+```
+**obj**：可以被序列化的对象，包括模型和张量等。
+f：存储文件的路径
+**pickle_module**：序列化的库，默认是pickle
+**pickle_protocol**：**对象转为字符串的规范协议
+**map_location**：cpu或者cpu，以此支持保存/加载模型时的设备不一样，例如保存的时候是gpu，但是加载的时候只有cpu，此时设map_location='cpu'，若是gpu下，map_location='cuda:0'
+**pickle_load_args**：存放参数，指定传给pickle_module.load的参数
+使用案例如下：
+```python
+torch.save(self.model.state_dict(), "checkpoints/TMO.pth")
+torch.load("checkpoints/TMO.pth",map_location='cpu')
+```
+

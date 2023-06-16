@@ -106,8 +106,8 @@ QLabel
 
 # 十、问题汇总
 
-## 1.设置窗口图标
-
+## 1.设置窗口图标以及软件图标
+（1）设置窗口图标，包括任务栏图标
 vs+qt下
 打开qrc文件，添加前缀/textEditor，添加文件/res/text.png
 应用如下：
@@ -115,8 +115,11 @@ vs+qt下
 ```c
 setWindowIcon(QIcon(":/textEditor/res/text.png"));
 ```
+（2）设置软件图标，包括桌面图标
+vs+qt下
+右键项目->添加->资源->Icon->导入要设置的.ico文件即可（必须为.ico文件）
 
-图标下载地址：[阿里巴巴矢量图库](https://www.iconfont.cn/)
+ps:图标下载地址：[阿里巴巴矢量图库](https://www.iconfont.cn/)
 
 ## 2.设置快捷键
 
@@ -218,4 +221,15 @@ int main(int argc, char *argv[]){
     ······
     return a.exec();
 }
+```
+## 8.如何添加背景音乐/音效
+vs+qt下
+项目属性->Qt Project Settings->Qt Modules中添加multimedia
+```c
+#include <QSoundEffect>
+QSoundEffect* effect = new QSoundEffect(this);
+effect->setSource(QUrl::fromLocalFile("..\\res\\Alarm01.wav"));
+effect->setLoopCount(QSoundEffect::Infinite);
+effect->setVolume(0.25f);
+effect->play();
 ```
