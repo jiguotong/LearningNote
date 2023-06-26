@@ -1,4 +1,4 @@
-# torch函数应用
+## torch函数应用
 
 1、torch.argmax(input: Tensor, dim: Optional[_int]=None, keepdim: _bool=False, *, out: Optional[Tensor]=None)
 返回指定维度最大值的序号（索引）。实际就是以该维度为标准划分为各个队伍，不个队伍的同一位置进行pk，选出最大的值所在的索引。
@@ -87,6 +87,10 @@ print('--------------------------end--------------------------')
 结果如图：![1686561179317](image/视频分割笔记/1686561179317.png)
 https://github.com/suhwan-cho/TMO
 
+4、.item()和a.eq(b)
+.item()作用是取出单元素张量的元素值并返回该值，保持原元素类型不变。
+例如loss是tensor(0.569),若total=loss.item(),则total为0.569，仍然是float类型
+.eq()是用于比较的包装器，返回同等维度的True/False合集
 ## 2.10 PyTorch中数据的输入和预处理
 1、torch.utils.data.DataLoader()
 ```python
