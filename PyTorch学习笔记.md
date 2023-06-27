@@ -204,3 +204,8 @@ torch.save(self.model.state_dict(), "checkpoints/TMO.pth")
 torch.load("checkpoints/TMO.pth",map_location='cpu')
 ```
 
+## 3.1 常见网络架构及解析
+### 3.1.1 BiseNet 
+https://blog.csdn.net/rainforestgreen/article/details/85157989
+https://blog.csdn.net/lx_ros/article/details/126515733
+http://t.csdn.cn/Rv60I
