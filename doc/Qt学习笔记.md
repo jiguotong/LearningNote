@@ -233,3 +233,10 @@ effect->setLoopCount(QSoundEffect::Infinite);
 effect->setVolume(0.25f);
 effect->play();
 ```
+
+## 9.非模态对话框的显示与及时释放(可同时存在多个)
+```c
+    MyDialog* remindPop = new MyDialog(this);
+    remindPop->setAttribute(Qt::WA_DeleteOnClose);// 设置退出自动销毁
+    remindPop->show();
+```

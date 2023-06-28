@@ -64,6 +64,7 @@ if __name__ == '__main__':
 都是对张量进行拼接操作
 torch.cat(): 用于连接两个相同大小的张量，不扩展维度
 torch.stack(): 用于连接两个相同大小的张量，并扩展维度
+
 ```python
 import torch
 x=torch.zeros(2,3)
@@ -84,6 +85,7 @@ print(b)
 
 print('--------------------------end--------------------------')
 ```
+
 结果如图：![1686561179317](image/视频分割笔记/1686561179317.png)
 https://github.com/suhwan-cho/TMO
 
@@ -91,14 +93,69 @@ https://github.com/suhwan-cho/TMO
 .item()作用是取出单元素张量的元素值并返回该值，保持原元素类型不变。
 例如loss是tensor(0.569),若total=loss.item(),则total为0.569，仍然是float类型
 .eq()是用于比较的包装器，返回同等维度的True/False合集
+
+## 2.9 PyTorch中的损失函数
+（1）交叉熵损失函数
++ BCE(binary_cross_encrypt,二值交叉熵)
+F.binary_cross_entropy_with_logits:该损失函数已经内部自带了计算logit的操作，无需在传入给这个loss函数之前手动使用sigmoid/softmax将之前网络的输入映射到[0,1]之间
+```python
+from torch.nn import functional as F
+bce_loss = F.binary_cross_entropy(F.sigmoid(input), target)
+bce_loss = F.binary_cross_entropy_with_logits(boundary_logits, boudary_targets_pyramid)
+```
+
++ dice_loss:Dice Loss常用于语义分割问题中，可以缓解样本中前景背景（面积）不平衡带来的消极影响.
+```python
+def dice_loss_func(input, target):
+    smooth = 1.
+    n = input.size(0)
+    iflat = input.view(n, -1)
+    tflat = target.view(n, -1)
+    intersection = (iflat * tflat).sum(1)
+    loss = 1 - ((2. * intersection + smooth) /
+                (iflat.sum(1) + tflat.sum(1) + smooth))
+    return loss.mean()
+```
+（2）ohemCELoss
+图像分割领域使用的损失函数，其中 Online hard example mining 的意思是，在训练过程中关注 hard example，对其施加更高权重的一种训练策略。cross-entropy loss 就是普通的交叉熵损失函数。
+```python
+class OhemCELoss(nn.Module):
+    """
+    Online hard example mining cross-entropy loss:在线难样本挖掘
+    if loss[self.n_min] > self.thresh: 最少考虑 n_min 个损失最大的 pixel，
+    如果前 n_min 个损失中最小的那个的损失仍然大于设定的阈值，
+    那么取实际所有大于该阈值的元素计算损失:loss=loss[loss>thresh]。
+    否则，计算前 n_min 个损失:loss = loss[:self.n_min]
+    """
+    def __init__(self, thresh, n_min, ignore_lb=255, *args, **kwargs):
+        super(OhemCELoss, self).__init__()
+        self.thresh = -torch.log(torch.tensor(thresh, dtype=torch.float)).cuda()     # 将输入的概率 转换为loss值
+        self.n_min = n_min
+        self.ignore_lb = ignore_lb
+        self.criteria = nn.CrossEntropyLoss(ignore_index=ignore_lb, reduction='none')   #交叉熵
+ 
+    def forward(self, logits, labels):
+        N, C, H, W = logits.size()
+        loss = self.criteria(logits, labels).view(-1)
+        loss, _ = torch.sort(loss, descending=True)     # 排序
+        if loss[self.n_min] > self.thresh:       # 当loss大于阈值(由输入概率转换成loss阈值)的像素数量比n_min多时，取所以大于阈值的loss值
+            loss = loss[loss>self.thresh]
+        else:
+            loss = loss[:self.n_min]
+        return torch.mean(loss)
+```
+
 ## 2.10 PyTorch中数据的输入和预处理
+
 1、torch.utils.data.DataLoader()
+
 ```python
 DataLoader(dataset, batch_size=1, shuffle=False, sampler=None, batch_sampler=None, num_workers=0, collate_fn=None, pin_memory=False, drop_last=False, timeout=0, work_init_fn=None)
 ```
 
 2、python的类中函数__getitem__的作用及使用方法
 __getitem__方法的作用是，可以将类中的数据像数组一样读出，操作符为[]，使用索引访问元素
+
 ```python
 class Test():
     def __init__(self):
@@ -129,6 +186,7 @@ https://blog.csdn.net/virus111222/article/details/128210099
 （1）定义一个数据集dataset，要重写__len__函数和__getitem__函数，因为后面要用遍历dataloader（需要用索引获取数组）
 （2）定义一个dataloader，用来封装该数据集，并且指定batch_size以及是否打乱顺序等
 （3）遍历dataloader时，比如batch_size等于4，那么dataloader就找4个下标（如果没打乱 就是 0 1 2 3 / 4 5 6 7，如果打乱，就会随机下标），去dataset里面通过这4个下标idx从__getitem__获取相应的数据(也可以选择不使用下标)
+
 ```python
 import torch
 import numpy as np
@@ -167,6 +225,7 @@ for batch_idx, (data, label, index) in enumerate(loader):
 ```
 
 输出结果
+
 ```python
 len: 4
 当前idx:0
@@ -188,10 +247,12 @@ index: tensor([1, 2])
 ```
 
 ## 2.11 PyTorch模型的保存和加载
+
 ```python
 torch.save(obj, f, pickle_module=pickle, pickle_protocol=2)
 torch.load(f, map_location=None, pickle_module=pickle, **pickle_load_args)
 ```
+
 **obj**：可以被序列化的对象，包括模型和张量等。
 f：存储文件的路径
 **pickle_module**：序列化的库，默认是pickle
@@ -199,13 +260,23 @@ f：存储文件的路径
 **map_location**：cpu或者cpu，以此支持保存/加载模型时的设备不一样，例如保存的时候是gpu，但是加载的时候只有cpu，此时设map_location='cpu'，若是gpu下，map_location='cuda:0'
 **pickle_load_args**：存放参数，指定传给pickle_module.load的参数
 使用案例如下：
+
 ```python
 torch.save(self.model.state_dict(), "checkpoints/TMO.pth")
 torch.load("checkpoints/TMO.pth",map_location='cpu')
 ```
 
+## 2.12 PyTorch的分布式训练
+
+单机多卡及常见问题：https://blog.csdn.net/u013531940/article/details/127858330
+多机多卡的基本概念：https://blog.csdn.net/a545454669/article/details/128772522
+
 ## 3.1 常见网络架构及解析
-### 3.1.1 BiseNet 
+
+### 3.1.1 ResNet
+https://blog.csdn.net/qq_39770163/article/details/126169080 
+### 3.1.5 BiseNet
+
 https://blog.csdn.net/rainforestgreen/article/details/85157989
 https://blog.csdn.net/lx_ros/article/details/126515733
 http://t.csdn.cn/Rv60I
