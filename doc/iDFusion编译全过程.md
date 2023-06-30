@@ -602,9 +602,6 @@ https://blog.csdn.net/qq_15751687/article/details/106465022
 https://blog.csdn.net/u013238941/article/details/129507499#comments_26491887
 **解决方法**：在初始化之前，先将旋转矩阵转变成四元数，然后归一化，再转成旋转矩阵，这样旋转矩阵能够通过正交检查。
 
-9、Visual Studio屏蔽警告
-https://blog.csdn.net/ZHAOJUNWEI08/article/details/84288189
-
 ```c
 //原代码
 Sophus::SO3d SO3_R(matrix_r)
@@ -613,6 +610,33 @@ Eigen::Quaterniond tmp(matrix_r);
 tmp.normalize();
 Sophus::SO3d SO3_R(tmp.toRotationMatrix());
 ```
+
+9、Visual Studio屏蔽警告
+https://blog.csdn.net/ZHAOJUNWEI08/article/details/84288189
+
+10、问题记录：
+(1)openchisel编译过程中注释掉某些代码，详情见git的版本库对比
+
+(2)error LNK2038: 检测到“RuntimeLibrary”的不匹配项的解决办法
+https://blog.csdn.net/xueyuan1024/article/details/82221109
+https://blog.csdn.net/liukang325/article/details/78584625
+https://blog.csdn.net/wpc320/article/details/8496957
+
+(3)、编译pangolin过程中的一系列问题
+https://blog.csdn.net/weixin_45675146/article/details/120884870
+https://blog.csdn.net/weixin_34910922/article/details/127000440
+https://code84.com/484547.html#3_Cmake_41
+https://blog.csdn.net/weixin_34910922/article/details/127000440
+https://www.yii666.com/blog/417607.html
+https://zhuanlan.zhihu.com/p/74958936
+
+(4)、相机标定参考资料
+http://zhaoxuhui.top/blog/2021/02/02/ros-camera-calibration.html
+
+(5)、AVX指令参考资料
+https://blog.csdn.net/fyire/article/details/120826881#%E6%95%B0%E6%8D%AE%E7%B1%BB%E5%9E%8B
+https://blog.csdn.net/zachariah2000/article/details/120731767
+https://blog.csdn.net/DuoKingg/article/details/129459346
 
 ## （七）iDFusion运行
 
