@@ -96,18 +96,24 @@ https://github.com/suhwan-cho/TMO
 
 5、批量标准化（Batch Normalization）
 不仅仅对输入层做标准化处理，还要对 每一中间层的输入(激活函数前) 做标准化处理，使得输出服从均值为 0，方差为 1 的正态分布，从而避免内部协变量偏移的问题。
+
 ```python
 nn.BatchNorm2d(in_channels)
 ```
+
 **优点**：
+
 + 首先，通过对输入和中间网络层的输出进行标准化处理后，减少了内部神经元分布的改变，使降低了不同样本间值域的差异性，得大部分的数据都其处在非饱和区域，从而保证了梯度能够很好的回传，避免了梯度消失和梯度爆炸
 + 其次，通过减少梯度对参数或其初始值尺度的依赖性，使得我们可以使用较大的学习速率对网络进行训练，从而加速网络的收敛
 + 最后，由于在训练的过程中批量标准化所用到的均值和方差是在一小批样本(mini-batch)上计算的，而不是在整个数据集上，所以均值和方差会有一些小噪声产生，同时缩放过程由于用到了含噪声的标准化后的值，所以也会有一点噪声产生，这迫使后面的神经元单元不过分依赖前面的神经元单元。所以，它也可以看作是一种正则化手段，提高了网络的泛化能力，使得我们可以减少或者取消 Dropout，优化网络结构
 
 ## 2.9 PyTorch中的损失函数
+
 （1）交叉熵损失函数
+
 + BCE(binary_cross_encrypt,二值交叉熵)
-F.binary_cross_entropy_with_logits:该损失函数已经内部自带了计算logit的操作，无需在传入给这个loss函数之前手动使用sigmoid/softmax将之前网络的输入映射到[0,1]之间
+  F.binary_cross_entropy_with_logits:该损失函数已经内部自带了计算logit的操作，无需在传入给这个loss函数之前手动使用sigmoid/softmax将之前网络的输入映射到[0,1]之间
+
 ```python
 from torch.nn import functional as F
 bce_loss = F.binary_cross_entropy(F.sigmoid(input), target)
@@ -115,6 +121,8 @@ bce_loss = F.binary_cross_entropy_with_logits(boundary_logits, boudary_targets_p
 ```
 
 + dice_loss:Dice Loss常用于语义分割问题中，可以缓解样本中前景背景（面积）不平衡带来的消极影响.
++ ![1689318412615](image/PyTorch学习笔记/1689318412615.png)
+
 ```python
 def dice_loss_func(input, target):
     smooth = 1.
@@ -126,8 +134,10 @@ def dice_loss_func(input, target):
                 (iflat.sum(1) + tflat.sum(1) + smooth))
     return loss.mean()
 ```
+
 （2）ohemCELoss
 图像分割领域使用的损失函数，其中 Online hard example mining 的意思是，在训练过程中关注 hard example，对其施加更高权重的一种训练策略。cross-entropy loss 就是普通的交叉熵损失函数。
+
 ```python
 class OhemCELoss(nn.Module):
     """
@@ -154,6 +164,8 @@ class OhemCELoss(nn.Module):
             loss = loss[:self.n_min]
         return torch.mean(loss)
 ```
+(3)FocalLoss
+https://blog.csdn.net/zhaohongfei_358/article/details/129108869
 
 ## 2.10 PyTorch中数据的输入和预处理
 
@@ -284,7 +296,9 @@ torch.load("checkpoints/TMO.pth",map_location='cpu')
 ## 3.1 常见网络架构及解析
 
 ### 3.1.1 ResNet
-https://blog.csdn.net/qq_39770163/article/details/126169080 
+
+https://blog.csdn.net/qq_39770163/article/details/126169080
+
 ### 3.1.5 BiseNet
 
 https://blog.csdn.net/rainforestgreen/article/details/85157989

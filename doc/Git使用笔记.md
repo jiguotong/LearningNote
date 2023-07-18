@@ -277,7 +277,7 @@ git subtree(子树合并)
 ``git submodule init``
 ``git submodule update --recursive``
 
-此时子库固定在某个提交的版本上，需要git checkout到某个分支，例如``git checkout main`` 
+此时子库固定在某个提交的版本上，需要git checkout到某个分支，例如 ``git checkout main``
 
 方法二：合并操作
 ``git clone git@192.168.1.3:jiguotong/parent.git --recurse-submodules``
@@ -295,7 +295,7 @@ git subtree(子树合并)
 5、推送子仓库的更新
 只能在子仓库中进行更新，不能在父仓库中推送子仓库的更新！！！
 
-6、删除父版本库
+6、删除子版本库
 ``git rm --cache child_module``
 ``git rm -rf child_module``
 ``git rm .gitmodules``
