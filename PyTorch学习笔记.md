@@ -107,6 +107,57 @@ nn.BatchNorm2d(in_channels)
 + 其次，通过减少梯度对参数或其初始值尺度的依赖性，使得我们可以使用较大的学习速率对网络进行训练，从而加速网络的收敛
 + 最后，由于在训练的过程中批量标准化所用到的均值和方差是在一小批样本(mini-batch)上计算的，而不是在整个数据集上，所以均值和方差会有一些小噪声产生，同时缩放过程由于用到了含噪声的标准化后的值，所以也会有一点噪声产生，这迫使后面的神经元单元不过分依赖前面的神经元单元。所以，它也可以看作是一种正则化手段，提高了网络的泛化能力，使得我们可以减少或者取消 Dropout，优化网络结构
 
+## 2.8 各类卷积操作
+
+多通道标准卷积 https://blog.csdn.net/weixin_39450742/article/details/122722242
+分组卷积 https://zhuanlan.zhihu.com/p/65377955
+深度可分离卷积 https://blog.csdn.net/zml194849/article/details/117021815
+
+1.标准多通道卷积
+![1689928267779](image/PyTorch学习笔记/1689928267779.png)
+
+```python
+img = torch.randn(16,8,8)
+layer = nn.Conv2d(16, 64, kernel_size=3, stride=1, padding=0, bias=False)
+out = layer(img)    #(64,6,6)
+# 使用的参数量为：3*3*16*64=9216
+pass
+```
+
+2.分组卷积
+将输入特征分成g组，每组单独进行标准卷积，最后将g组的结果进行拼接
+![1689928757354](image/PyTorch学习笔记/1689928757354.png)
+
+```python
+img = torch.randn(16,8,8)
+layer = nn.Conv2d(16, 64, kernel_size=3, stride=1, padding=0, groups=8, bias=False)
+out = layer(img)    #(64,6,6)
+# 使用的参数量为：3*3*(16/8)*(64/8)*8=1152
+pass
+```
+
+2.深度可分离卷积
+由深度卷积dw和逐点卷积pw构成
+（1）深度卷积dw
+![1689929332392](image/PyTorch学习笔记/1689929332392.png)
+本质上是分组卷积，且输出通道数和组数都等于输入通道数，因此通道数没有变化，只有高宽尺寸发生变化，此种操作没有没有有效的利用不同通道在相同空间位置上的feature信息。
+
+（2）逐点卷积pw
+![1689929858061](image/PyTorch学习笔记/1689929858061.png)
+本质上是标准卷积，filter的核为1*1，输出通道数为设置的值，因此通道数发生了变化，但高宽尺寸没有发生变化。
+
+综合代码
+
+```python
+img = torch.randn(16,8,8)
+layer_dw = nn.Conv2d(16, 16, kernel_size=3, stride=1, padding=0, groups=16, bias=False)
+out = layer_dw(img)    #(16,6,6)
+layer_pw = nn.Conv2d(16,64, kernel_size=1, stride=1, padding=0, bias=False)
+out = layer_pw(out)    #(64,6,6)
+# 使用的参数量为：3*3*(16/16)*(16/16)*16 + 1*1*16*64 = 114 + 1024 = 1138
+pass
+```
+
 ## 2.9 PyTorch中的损失函数
 
 （1）交叉熵损失函数
@@ -164,6 +215,7 @@ class OhemCELoss(nn.Module):
             loss = loss[:self.n_min]
         return torch.mean(loss)
 ```
+
 (3)FocalLoss
 https://blog.csdn.net/zhaohongfei_358/article/details/129108869
 
@@ -304,3 +356,108 @@ https://blog.csdn.net/qq_39770163/article/details/126169080
 https://blog.csdn.net/rainforestgreen/article/details/85157989
 https://blog.csdn.net/lx_ros/article/details/126515733
 http://t.csdn.cn/Rv60I
+
+# 3.常用工具学习
+
+Hydra官网：https://hydra.cc/docs/1.3/intro/
+
+## 3.1 Hydra学习————python中用来配置变量的工具
+
+### 3.1.1 安装
+
+pip install hydra-core
+
+### 3.1.2 了解YAML文件和python函数装饰器的使用
+
+YAML文件：https://blog.csdn.net/xikaifeng/article/details/121612180
+函数装饰器：https://blog.csdn.net/qq_45476428/article/details/126962919
+
+### 3.1.3 使用Hydra
+
+main.py
+
+```python
+import hydra
+from omegaconf import DictConfig
+
+@hydra.main(config_path="configs", config_name="config")
+def test(config: DictConfig):
+    # To access elements of the config
+    print(f"The batch size is {config.deeplearning['batch_size']}")
+    print(f"The learning rate is {config.User[0]['name']}")
+
+    # 用OmegaConf.to_yaml组织成yaml的可视化格式
+    print(OmegaConf.to_yaml(config))
+
+if __name__ == "__main__":
+    test()
+```
+
+configs/config.yaml
+
+```yaml
+### config/config.yaml
+deeplearning:
+  batch_size: 10
+  lr: 1e-4
+
+User:
+-  name: jiguotong
+-  age: 24
+```
+
+### 3.1.4 进阶使用Hydra-group
+
+可以在yaml文件中进行嵌套其他yaml文件
+文件结构
+
+```shell
+├── configs
+│   ├── config_db.yaml
+│   └── db
+│       ├── mysql.yaml
+│       └── postgresql.yaml
+└── main.py
+```
+
+main.py
+
+```python
+import hydra
+from omegaconf import DictConfig
+
+@hydra.main(config_path="configs", config_name="config")
+def test_for_db(config: DictConfig):
+    print(config.db.driver)
+    print(config.db.user)
+    print(OmegaConf.to_yaml(config))
+
+if __name__ == "__main__":
+    test_for_db()
+```
+
+configs/config_db.yaml
+
+```yaml
+### config/config_db.yaml
+defaults:
+  - db: mysql
+```
+
+configs/db/mysql.yaml
+
+```yaml
+driver: mysql
+user: mysql_user
+password: 654321
+timeout: 20
+```
+
+configs/db/postgresql.yaml
+
+```yaml
+driver: postgresql
+user: postgres_user
+password: 123456
+timeout: 20
+```

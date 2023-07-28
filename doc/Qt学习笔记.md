@@ -117,7 +117,8 @@ setWindowIcon(QIcon(":/textEditor/res/text.png"));
 ```
 （2）设置软件图标，包括桌面图标
 vs+qt下
-右键项目->添加->资源->Icon->导入要设置的.ico文件即可（必须为.ico文件）
+添加.rc文件，内容如下
+IDI_ICON1 ICON DISCARDABLE "res/AppIcon128.ico"
 
 ps:图标下载地址：[阿里巴巴矢量图库](https://www.iconfont.cn/)
 

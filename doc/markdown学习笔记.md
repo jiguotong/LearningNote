@@ -5,6 +5,8 @@
 轻量级标记语言，允许人们使用易读易写的纯文本格式编辑文档
 
 [官方文档教程](https://markdown.com.cn/)
+[Markdown语法大全](https://www.cnblogs.com/miki-peng/articles/12502985.html)
+[typora软件官方下载地址](https://www.typoraio.cn/#)
 
 ## 二、Markdown标题
 
@@ -93,14 +95,17 @@ ___粗斜体文本___
   - 无序列表二层
     - 无序列表三层
 
-有序列表的使用，在数字及符号`.`后加空格后输入内容
+有序列表的使用，在数字及符号 `.`后加空格后输入内容
+
 1. 有序
 2. 有序
-3. 有序  
+3. 有序
+
 ## 五、Markdown代码
 
 你也可以用\```包裹一段代码，并指定一种语言（也可以不指定）,在\```之后添加语言（例如c，python）可以指定语言
 ![1679450576562](image/markdown学习笔记/1679450576562.png)
+
 ```python
 def fun():
     printf("hello world")
