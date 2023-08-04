@@ -13,11 +13,12 @@ $apt-get install git
 #查看版本
 $git --version
 
-## 2.windows、
+## 2.windows
 
 直接官网下载，安装
 https://git-scm.com/download
-3.配置
+
+## 3.配置
 #查询配置信息
 $git config --list、
 #配置个人信息(--global仅针对当前登录用户)、

@@ -1,0 +1,5 @@
+*.pth
+*.pyc
+**/checkpoints/
+**/dataset/
+src/python/LeNet/data/MNIST/
