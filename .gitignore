@@ -3,3 +3,4 @@
 **/checkpoints/
 **/dataset/
 src/python/LeNet/data/MNIST/
+#**/代表一切文件夹，*.代表一切名称
