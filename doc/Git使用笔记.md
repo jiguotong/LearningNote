@@ -255,6 +255,27 @@ $ git push origin :refs/tags/V1.0
 
 git config --global alias.lg "log --color --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit"
 
+2、.gitignore
+在Git项目的根目录里增加一个.gitignore文件，里面可以加上不纳入版本管理的文件，表示忽略。例如下：
+```bash
+*.pyc
+*.png
+result/     # 根目录下result下所有文件
+**/data/    # 所有名叫data文件夹下的所有文件
+```
+
+3、.gitkeep
+在git项目中，空文件夹是不被纳入版本管理的，但有时候有必要保存此文件夹，此时可在此文件夹中添加一个名为.gitkeep的文件，默认是一个空文件夹。
+```bash
+- intput_image
+   -- 1.png
+   -- 2.png
+- output_image
+   -- .gitkeep
+```
+
+4、
+
 # 九、Git子项目管理
 
 git提供了两种子仓库使用方式：
