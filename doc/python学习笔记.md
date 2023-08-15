@@ -198,3 +198,118 @@ def main_config(cfg: Player) -> None:
 if __name__ == '__main__':
     main_config()
 ```
+
+## 3.2 DVC——数据版本管理工具，基于Git使用
+### 3.2.1 安装
+pip install dvc
+pip install dvc-ssh
+pip install dvclive
+### 3.2.2 基本使用
+#### 1.数据版本管理
+```bash
+# 在git项目的根目录进行dvc初始化
+dvc init    
+git commit -m "Initial DVC" && git push
+
+# 配置dvc远程仓库
+dvc remote add -d ssh-storage ssh://jiguotong@192.168.1.140/home/jiguotong/Projects/dvc_storage/DVC
+git add .dvc/config
+git commit -m "configure dvc remote url" && git push
+
+# 增加一个文件STDC.onnx
+dvc add STDC.onnx
+dvc push
+git add STDC.onnx.dvc
+git commit -m "Add .dvc files" && git push
+
+# 其他主机进行获取
+git pull
+dvc pull
+```
+
+#### 2.数据流程版本管理
+类似于脚本，定义了一系列操作，成为一个流水线。
+```bash
+wget https://code.dvc.org/get-started/code.zip
+unzip code.zip && rm -f code.zip
+dvc get https://github.com/iterative/dataset-registry get-started/data.xml -o data/data.xml
+pip install -r src/requirements.txt
+
+# dvc stage add增加一个步骤
+dvc stage add -n prepare \
+                -p prepare.seed,prepare.split \
+                -d src/prepare.py -d data/data.xml \
+                -o data/prepared \
+                python src/prepare.py data/data.xml
+
+dvc stage add -n featurize \
+                -p featurize.max_features,featurize.ngrams \
+                -d src/featurization.py -d data/prepared \
+                -o data/features \
+                python src/featurization.py data/prepared data/features
+
+dvc stage add -n train \
+                -p train.seed,train.n_est,train.min_split \
+                -d src/train.py -d data/features \
+                -o model.pkl \
+                python src/train.py data/features model.pkl
+
+# 会生成一个dvc.yaml文件，里面包含了运行的命令信息、依赖项、输出项
+# 使用dvc repro执行dvc.yaml中的所有阶段
+dvc repro
+
+# 会生成一个dvc.lock文件，对应于dvc.yaml，用于记录pipeline的状态并帮助跟踪输出。
+```
+命令详解
+-n 操作的名称
+-p 配置，可以是多个，文件或者文件夹
+-d 操作依赖的数据，脚本和模型等，可以是多个，文件或者文件夹
+-o 操作的输出，可以是多个，文件或者文件夹
+command：执行操作的命令如python -u train.py
+
+#### 3.指标，参数，绘图管理
+```bash
+# 增加-评估-阶段
+dvc stage add -n evaluate \
+  -d src/evaluate.py -d model.pkl -d data/features \
+  -M eval/live/metrics.json \
+  -O eval/live/plots -O eval/prc -o eval/importance.png \
+  python src/evaluate.py model.pkl data/features
+# -m 输出的指标的目录
+dvc repro
+```
+产生的目录如下：
+![1692082793228](image/python学习笔记/1692082793228.png)
+
+```bash
+# 查看指标统计
+dvc metrics show
+```
+添加以下内容在dvc.yaml中
+```yaml
+# 配置绘图 dvc.yaml
+plots:
+  - ROC:
+      template: simple
+      x: fpr
+      y:
+        eval/live/plots/sklearn/roc/train.json: tpr
+        eval/live/plots/sklearn/roc/test.json: tpr
+  - Confusion-Matrix:
+      template: confusion
+      x: actual
+      y:
+        eval/live/plots/sklearn/cm/train.json: predicted
+        eval/live/plots/sklearn/cm/test.json: predicted
+  - Precision-Recall:
+      template: simple
+      x: recall
+      y:
+        eval/prc/train.json: precision
+        eval/prc/test.json: precision
+  - eval/importance.png
+```
+进行绘图
+```bash
+dvc plots show
+```
