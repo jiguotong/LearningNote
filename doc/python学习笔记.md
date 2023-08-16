@@ -200,9 +200,9 @@ if __name__ == '__main__':
 ```
 
 ## 3.2 DVC——数据版本管理工具，基于Git使用
+参考网址：https://dvc.org/doc
 ### 3.2.1 安装
 pip install dvc
-pip install dvc-ssh
 pip install dvclive
 ### 3.2.2 基本使用
 #### 1.数据版本管理
@@ -212,7 +212,22 @@ dvc init
 git commit -m "Initial DVC" && git push
 
 # 配置dvc远程仓库
-dvc remote add -d ssh-storage ssh://jiguotong@192.168.1.140/home/jiguotong/Projects/dvc_storage/DVC
+## 使用ssh方式
+pip install dvc-ssh
+dvc remote add -d ssh-storage ssh://192.168.1.140/home/jiguotong/Projects/dvc_storage/DVC
+dvc remote modify --local ssh-storage user jiguotong
+dvc remote modify --local ssh-storage password 123456
+
+## 使用webdav方式
+pip install dvc_webdav
+dvc remote add -d webdav-storage webdav://192.168.1.2/home/jiguotong/Projects/dvc_storage/DVC
+dvc remote modify --local webdav-storage user jiguotong
+dvc remote modify --local webdav-storage password 123456
+
+dvc remote list # 可以查看目前有的remote列表
+dvc remote default ssh-storage # 可以设置默认的远程dvc仓库是哪个
+
+## git上传配置信息，其中config.local会被ignore
 git add .dvc/config
 git commit -m "configure dvc remote url" && git push
 
@@ -224,6 +239,15 @@ git commit -m "Add .dvc files" && git push
 
 # 其他主机进行获取
 git pull
+
+## 需要设置一下自己对远程dvc仓库地址的访问凭据，才能进行拉取
+dvc remote list
+dvc remote modify --local ssh-storage user xxxxx
+dvc remote modify --local ssh-storage password xxxxx
+
+dvc remote modify --local webdav-storage user xxxxx
+dvc remote modify --local webdav-storage password xxxxx
+
 dvc pull
 ```
 
