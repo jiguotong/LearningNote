@@ -204,7 +204,38 @@ if __name__ == '__main__':
 ### 3.2.1 安装
 pip install dvc
 pip install dvclive
+
 ### 3.2.2 基本使用
+#### 0.基本命令
+```bash
+# dvc version 查看dvc版本
+dvc version
+
+# dvc list 查看远程git库中被dvc管理的项目
+dvc list https://github.com/jiguotong/DVC data
+## 若是访问dvc库需要用户名密码，则可加上如下配置
+dvc list https://github.com/jiguotong/DVC -R --remote-config user=jiguotong password=123456 >> tmp.txt
+
+# dvc get 获取git库或者dvc库的内容，单纯获取，不进行追踪，且可以不是一个dvc项目
+## 获取未被dvc追踪的文件/文件夹
+dvc get https://github.com/jiguotong/DVC train.py
+dvc get https://github.com/jiguotong/DVC scripts
+## 获取被dvc追踪的文件/文件夹
+dvc get https://github.com/jiguotong/DVC model.onnx --remote-config user=jiguotong password=123456
+dvc get https://github.com/jiguotong/DVC data/val --remote-config user=jiguotong password=123456 -o data/val
+## --remote-config 后面追加访问dvc仓库所需要的凭据
+## -o 指定将get到的文件/文件夹以什么名称存放在本地
+
+# dvc import 导入其他git库中的内容，并且进行追踪，必须在一个dvc项目中进行使用
+dvc import https://github.com/jiguotong/DVC data/model.onnx --remote-config user=jiguotong password=123456
+dvc import https://github.com/jiguotong/DVC data/val --remote-config user=jiguotong password=123456 -o data/val
+# 如果源项目中的文件发生改变，可以使用dvc update target的形式进行更新
+dvc udpate model.onnx
+dvc update data/val
+
+
+## 将github仓库换成本地仓库，git@192.168.1.3:jiguotong/DVC
+```
 #### 1.数据版本管理
 ```bash
 # 在git项目的根目录进行dvc初始化
@@ -220,7 +251,7 @@ dvc remote modify --local ssh-storage password 123456
 
 ## 使用webdav方式
 pip install dvc_webdav
-dvc remote add -d webdav-storage webdav://192.168.1.2/home/jiguotong/Projects/dvc_storage/DVC
+dvc remote add -d webdav-storage webdav://192.168.1.2:5005/home/jiguotong/Projects/dvc_storage/DVC
 dvc remote modify --local webdav-storage user jiguotong
 dvc remote modify --local webdav-storage password 123456
 
