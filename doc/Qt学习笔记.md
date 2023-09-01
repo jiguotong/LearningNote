@@ -107,6 +107,7 @@ QLabel
 # 十、问题汇总
 
 ## 1.设置窗口图标以及软件图标
+
 （1）设置窗口图标，包括任务栏图标
 vs+qt下
 打开qrc文件，添加前缀/textEditor，添加文件/res/text.png
@@ -115,10 +116,14 @@ vs+qt下
 ```c
 setWindowIcon(QIcon(":/textEditor/res/text.png"));
 ```
+
 （2）设置软件图标，包括桌面图标
 vs+qt下
 添加.rc文件，内容如下
+
 IDI_ICON1 ICON DISCARDABLE "res/AppIcon128.ico"
+
+转化为.ico的软件可使用 格式工厂
 
 ps:图标下载地址：[阿里巴巴矢量图库](https://www.iconfont.cn/)
 
@@ -223,9 +228,12 @@ int main(int argc, char *argv[]){
     return a.exec();
 }
 ```
+
 ## 8.如何添加背景音乐/音效
+
 vs+qt下
 项目属性->Qt Project Settings->Qt Modules中添加multimedia
+
 ```c
 #include <QSoundEffect>
 QSoundEffect* effect = new QSoundEffect(this);
@@ -236,6 +244,7 @@ effect->play();
 ```
 
 ## 9.非模态对话框的显示与及时释放(可同时存在多个)
+
 ```c
     MyDialog* remindPop = new MyDialog(this);
     remindPop->setAttribute(Qt::WA_DeleteOnClose);// 设置退出自动销毁
