@@ -21,7 +21,6 @@ https://segmentfault.com/a/1190000021950993
 
 [CentOS7的下载安装配置教程](https://blog.csdn.net/m0_51545690/article/details/123238360)
 
-
 # 三、Linux常用命令
 
 [Linux常用命令参考](https://segmentfault.com/a/1190000021950993)
@@ -76,6 +75,7 @@ ls 是最常见的目录操作命令，主要作用是显示目录下的内容
   * -l: 长格式显示
 
 示例：
+
 ```shell
 [root@localhost~]$ ls -l
 #权限 引用计数 所有者 所属组 大小 文件修改时间 文件名
@@ -92,6 +92,7 @@ ls 是最常见的目录操作命令，主要作用是显示目录下的内容
 第六列：文件修改时间。文件状态修改时间或文件数据修改时间都会更改这个时间，注意这个时间不是文件的创建时间。
 第七列：文件名。
 ```
+
 2.2 cd命令
 
 cd是切换所在目录的命令，基本信息如下：
@@ -112,12 +113,14 @@ cd是切换所在目录的命令，基本信息如下：
 * 可以是绝对路径(以根目录为参照物)或相对路径(以当前目录为参照物)
 
 简化用法:
+
 ```bash
 cd ~     #当前用户的home目录
 cd -     #上一次所在目录
 cd .     #当前目录
 cd ..    #上级目录
 ```
+
 2.3 pwd命令
 
 pwd命令是查询所在目录的命令，基本信息如下：
@@ -304,7 +307,6 @@ ln命令用来为文件创建链接，连接类型分为硬连接和符号连接
     建立软链接文件。如果不加'-s'选项，则建立硬链接文件
   * -f:
     强行删除已存在的链接文件。如果链接文件已存在，则删除目标文件后再建立链接文件
-
   * 源文件：指定链接的源文件。如果使用-s选项创建软链接，则“源文件”可以是文件或者目录，创建硬链接时，则“源文件”参数只能是文件。（源文件最好用绝对路径名，这样可以在任何工作目录下进行符号链接，而当源文件用相对路径时，如果当前的工作路径与要创建的符号链接文件所在路径不同，就不能进行链接）
   * 目标文件：指定源文件的目标链接文件，省略则在当前目录下新建与源文件名称相同的链接文件
 
@@ -492,6 +494,7 @@ chmod命令的权限模式分为符号组合和八进制数组合
 * 例如读写权限rw八进制数表示 6
 
 示例：
+
 ```
 # 添加组用户的写权限
 chmodg +w ./test.log
@@ -516,6 +519,7 @@ a=rw ./testdir/
 
 chmod--reference=./1.log ./test.log
 ```
+
 5.3 chown 命令
 
 chown 命令用来修改文件和目录的所有者和所属组，基本信息如下：
@@ -555,7 +559,7 @@ umask命令用来显示或设置创建文件或目录的权限掩码。
 
 示例：
 
-以八进制数的形式输出权限掩码[root@localhosttmp]# umask0022# 
+以八进制数的形式输出权限掩码[root@localhosttmp]# umask0022#
 以八进制数的形式输出权限掩码，并作为指令来执行 [root@localhosttmp]# umask-pumask 0022# 以符号组合的方式输出权限掩码。[root@localhosttmp]# umask -Su=rwx,g=rx,o=rx
 
 #上条命令以符号组合的方式输出权限掩码，输出的结果u=rwx,g=rx,o=rx转化为八进制数等于0755，#用八进制数来设置同样的权限，umask需要额外的执行减法"0777 - 0755"即0022[root@localhosttmp]# umask
@@ -687,6 +691,7 @@ help 命令只能获取shell内置命令的帮助，基本信息如下：
   * -s：仅输出内建命令的命令格式。
 
 示例：
+
 ```
 # 以man手册的格式查看内置命令type的帮助信息
 
@@ -1195,8 +1200,13 @@ shutdown命令用来系统关机。shutdown指令可以关闭所有程序，并�
 
 示例：
 
-#立即关机[root@localhost~]# shutdown -h now#指定5分钟后关机，同时送出警告信息给登入用户：[root@localhost~]# shutdown
-+5 "System will shutdown after 5
+#立即关机
+
+[root@localhost~]# shutdown -h now
+
+#指定5分钟后关机，同时送出警告信息给登入用户：
+
+[root@localhost~]# shutdown +5 "System will shutdown after 5
 minutes"
 
 9.3 reboot 命令
@@ -1225,8 +1235,7 @@ halt 和 poweroff
 
 9.5 init 命令
 
-init 命令是修改Linux
-运行级别的命令，是Linux下的进程初始化工具，init进程是所有Linux进程的父进程，它的进程号为1。也可以用于关机和重启，这个命令并不安全，不建议使用
+init 命令是修改Linux运行级别的命令，是Linux下的进程初始化工具，init进程是所有Linux进程的父进程，它的进程号为1。也可以用于关机和重启，这个命令并不安全，不建议使用
 
 命令格式：init [选项] 系统运行级别
 
@@ -1336,8 +1345,7 @@ ifconfig 被用于配置和显示Linux内核中网络接口的网络参数。用
 
 ifconfig 命令最主要的作用就是查看IP地址的信息，直接输入ifconfig命令即可显示激活状态的网络设备信息:
 
-[root@localhost
-~]# ifconfig
+[root@localhost ~]# ifconfig
 
 eth0      Link encap:Ethernet  HWaddr 00:16:3E:00:1E:51inet addr:10.160.7.81Bcast:10.160.15.255Mask:255.255.240.0UP
 BROADCAST RUNNING MULTICAST  MTU:1500Metric:1RX
@@ -1427,8 +1435,7 @@ rtt min/avg/max/mdev = 19.515/66.701/102.798/34.892 ms
 
 10.4 netstat 命令
 
-netstat是网络状态查看命令，既可以查看到本机开启的端口，也可以查看哪些客户端连接。在CentOS
-7.x中 netstat 命令默认没有安装，如果需要使用，需要先安装 "net-snmp" 和 "net-tools"
+netstat是网络状态查看命令，既可以查看到本机开启的端口，也可以查看哪些客户端连接。在CentOS7.x中 netstat 命令默认没有安装，如果需要使用，需要先安装 "net-snmp" 和 "net-tools"
 软件包。基本信息如下：
 
 * 命令名称：network
@@ -1731,3 +1738,17 @@ lastb 命令是查看错误登录的信息的，查看的是 "/var/log/btmp"
   * -R：不显示登入系统的主机名称或IP地址
   * -x：显示系统关机，重新开机，以及执行等级的改变等信息
 * 用户|终端：显示指定的用户或终端
+
+## 12 进程服务命令
+在 Linux 系统中，有许多命令用于管理进程和服务。下面是一些常用的命令：
+
+1. `ps`：显示当前活动进程的信息。使用 `ps aux` 命令可以显示所有进程的详细信息。
+2. `top`：实时显示进程的系统资源使用情况和进程列表。按下 `q` 键可以退出。
+3. `kill`：向进程发送信号以终止或控制进程。例如，使用 `kill -9 PID` 命令可以强制终止指定进程。
+4. `pgrep`：根据进程名称查找进程的 PID。例如，使用 `pgrep firefox` 可以查找所有名为 "firefox" 的进程的 PID。
+5. `service` 或 `systemctl`：用于管理系统服务。例如，`service sshd start` 可以启动 SSH 服务。
+6. `systemctl`：与 `service` 类似，用于管理系统服务。例如，`systemctl start nginx` 可以启动 Nginx 服务。
+7. `systemctl status`：显示服务的状态信息。例如，`systemctl status apache2` 可以显示 Apache 服务的状态。
+8. `systemctl enable`：配置服务在系统启动时自动启动。例如，`systemctl enable mysql` 可以将 MySQL 服务配置为开机启动。
+9. `netstat`：显示网络连接、路由表和网络接口信息。例如，`netstat -tuln` 可以显示所有监听端口的状态。
+10. `lsof`：显示打开文件的进程信息。例如，`lsof /var/log/syslog` 可以显示打开 /var/log/syslog 文件的进程。
