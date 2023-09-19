@@ -368,3 +368,33 @@ plots:
 ```bash
 dvc plots show
 ```
+
+# 【python】关于import相关知识总结
+https://blog.csdn.net/BIT_Legend/article/details/130775553
+```python
+# py文件：所有以.py结尾的文件
+# py脚本：不被import，能直接运行的py文件，一般会import别的py文件
+# python包：被import使用，一般不能直接运行的py文件，一般只包含函数/类，调试时需要调用if __main__语句
+ 
+ 
+# 搜索路径
+# 指python以 绝对路径 形式导入包时的所有可能路径前缀，整个程序不管在哪个py文件里 搜索路径 是相同的
+# 默认 搜索路径 按顺序包括：程序入口py脚本的当前路径、python包安装路径，当存在重名时，注意顺序问题
+# 程序入口py脚本的当前路径只有一个，指整个程序入口的唯一py脚本的当前路径，如下是 搜索路径 查看方式
+import sys
+print(sys.path)                 # 整个程序不管import多少个python包，其程序入口只有一个py脚本
+# sys.path.append("/xx/xx/xx")  # 增加 搜索路径 的方式
+ 
+ 
+# 绝对路径
+# 是以 搜索路径 为前缀，拼接下面xxx后形成完整的python包调用路径
+import xxx                      # xxx可以是文件夹/py包文件
+from xxx import abc             # xxx可以是文件夹/py包文件，abc可以是文件夹/py包文件/变量/函数/类
+ 
+# 相对路径
+# 是以 当前执行import语句所在py文件的路径 为参考，拼接下面的.xxx/..xxx后形成完整的python包调用路径
+# ⭐但是需要注意，相对路径 只能在python包中使用，不能在程序入口py脚本里使用，否则会报错
+# 当单独调试python包时，调用if __main__语句，相对路径同样报错，原因是此时py文件变py脚本不再是python包
+from .xxx import xxx            # 当前路径
+from ..xxx import xxx           # 当前路径的上一级路径
+```
