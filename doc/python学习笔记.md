@@ -1,3 +1,42 @@
+# 命令行参数的传递方式
+1.通过argparse库进行传递
+```python
+# main.py
+import argparse
+
+parser = argparse.ArgumentParser(
+    description='Static person information'
+)
+
+parser.add_argument('country', type=str)
+parser.add_argument('-n', '--name', type=str)
+parser.add_argument('--gender', type=str)
+parser.add_argument('--age', default=20, type=int)
+
+args = parser.parse_args()
+
+print(args.country)
+print(args.name)
+print(args.gender)
+print(args.age)
+print(args)
+
+# 执行命令 python main.py -n jiguotong --gender male --age 25 China
+# 输出为：
+'''
+China
+jiguotong
+male
+25
+Namespace(country='China', name='jiguotong', gender='male', age=25)
+'''
+```
+
+parser.add_argument的可选参数详解：
+name/flag: 例country、-n、--name都是，其中不加短线-则在命令行中为必选参数，且不能在命令行中体现名字，如``python main.py China``，加短线的是可选参数，若想传递参数，必须在命令行中体现名字，如``python main.py -n jiguotong``或``python main.py --name jiguotong``
+type：指示该变量的数据类型
+default：指示该变量若没赋值的默认值
+
 ### yield关键字
 
 https://blog.csdn.net/weixin_44726976/article/details/109058763
