@@ -37,6 +37,28 @@ name/flag: 例country、-n、--name都是，其中不加短线-则在命令行�
 type：指示该变量的数据类型
 default：指示该变量若没赋值的默认值
 
+2.通过sys.argv进行传递
+```python
+import sys
+
+param_num = len(sys.argv)
+params = sys.argv
+for param in params:
+    print(param)
+
+# 执行命令 python main.py China jiguotong male 25 
+# 输出为：
+"""
+test_for_args.py
+China
+jiguotong
+male
+25
+"""
+```
+
+sys.argv[0]是自身执行文件的路径，其他参数1-n是外部传进来
+
 ### yield关键字
 
 https://blog.csdn.net/weixin_44726976/article/details/109058763
