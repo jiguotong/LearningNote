@@ -1,3 +1,6 @@
+# Pytorch——Tensor的储存机制以及view()、reshape()、reszie_()三者的关系和区别
+[tensor存储机制 view reshape contiguous](https://www.cnblogs.com/CircleWang/p/15658951.html)
+
 # 命令行参数的传递方式
 1.通过argparse库进行传递
 ```python
