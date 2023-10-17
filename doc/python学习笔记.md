@@ -525,7 +525,6 @@ demo
 └── setup.py
 
 display.py
-
 ```python
 def print_hello():
     print("hello")
@@ -622,3 +621,99 @@ setup(
 ```
 
 ## 3.示例说明——C++代码扩展安装
+:book: 参考：
+[Pybind11](https://zhuanlan.zhihu.com/p/545094977)
+[pybind11使用指南](https://blog.csdn.net/zhuikefeng/article/details/107224507)
+
+(1)目录结构
+C_operations
+├── setup.py
+└── src
+    ├── basic_op.cpp
+    └── basic_op.h
+
+src/basic_op.h
+```c
+#include <iostream>
+
+int add(int i, int j);
+
+int multi(int i, int j);
+```
+
+src/basic_op.cpp
+```c
+//basic_op.cpp
+#include <pybind11/pybind11.h>
+namespace py = pybind11;
+ 
+int add(int i, int j) {
+    return i + j;
+}
+
+int multi(int i, int j) {
+    return i * j;
+}
+
+//basic_op是模块的名称，add是包中函数的名称，此处的basic_op必须与setup.py中的CppExtension中的name一致
+//PYBIND11_MODULE是一个宏，m是py::module类型
+PYBIND11_MODULE(basic_op, m) {
+    m.doc() = "pybind11 example plugin"; // optional module docstring
+    m.def("Cadd", &add, "A function which adds two numbers");    // &add 就是取add函数的地址，"Cadd"是指在python中调用的别名
+    m.def("Cmulti", &multi, "A function which adds two numbers");
+}
+```
+
+setup.py
+```python
+from setuptools import setup
+from torch.utils.cpp_extension import BuildExtension, CppExtension
+
+
+setup(
+    name='C_operations',
+    description="operations from C",
+    ext_modules=[
+        CppExtension(
+            name='basic_op',
+            sources=['src/basic_op.cpp'],
+            include_dirs=['src/basic_op.h'],
+        )
+    ],
+    cmdclass={
+        'build_ext': BuildExtension
+    })
+```
+
+(2)执行打包安装
+``cd C_operations``
+``python setup.py install``
+(3)结果查询方法
+同上。结果如下：
+![1697519696099](image/python学习笔记/1697519696099.png)
+![1697519832598](image/python学习笔记/1697519832598.png)
+![1697519860530](image/python学习笔记/1697519860530.png)
+
+(4)函数调用
+```python
+import torch  # 不引入torch会报错libc10.so错误
+import basic_op
+
+if __name__ == '__main__':
+    res = basic_op.Cmulti(5, 3)
+    print(res)
+
+    res = basic_op.Cadd(5, 3)
+    print(res)
+```
+(5)流程解析
+PYBIND11_MODULE作用是将C++跟python绑定起来
+
+:star:如果报错ImportError: libc10.so: cannot open shared object file: No such file or directory
+libc10.so是基于pytorch生成的，因此需要先导入torch包，然后再导入依赖于torch的包：
+``import torch``
+``import basic_op``
+
+## 4.示例说明——pytorch中构建CUDA扩展
+[pytorch的C++ extension写法](https://zhuanlan.zhihu.com/p/100459760)
+[PyTorch中构建和调用C++/CUDA扩展](https://blog.csdn.net/wolaiyeptx/article/details/121633882)
