@@ -505,6 +505,9 @@ from .xxx import xxx            # 当前路径
 from ..xxx import xxx           # 当前路径的上一级路径
 ```
 
+# 【Python】`__init__.py` 文件详解
+https://blog.csdn.net/u013589130/article/details/128743332
+
 # python打包工具setuptools的使用说明
 
 ## 1.整体流程
