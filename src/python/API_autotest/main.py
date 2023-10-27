@@ -1,4 +1,12 @@
 import requests, json
+import demo
+import sys
+
+
+for path in sys.path:
+    print(path)
+
+demo.test()
 
 payload = {'key1': '加工', 'key2': '各个'}
 
