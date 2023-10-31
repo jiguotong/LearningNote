@@ -31,10 +31,10 @@ def multi_thread():
         )
 
     for thread in threads:
-        thread.start() # 50个线程启动
+        thread.start()  # 50个线程启动
 
     for thread in threads:
-        thread.join() # 等待结束
+        thread.join()  # 等待结束
     print("multi_thread end")
 
 
