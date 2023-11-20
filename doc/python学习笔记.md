@@ -1,3 +1,284 @@
+# python包安装
+## pip与conda
+conda 包管理工具
+pip 包管理工具
+miniconda3安装路径：usr/local/miniconda3
+linux下创建新用户会产生 /home/jiguotong/.conda，内部有envs、pkgs文件夹
+利用conda新建虚拟环境时，放在了 /home/jiguotong/.conda/envs里面
+
+## pip install 与 conda install
+conda install xxx：这种方式安装的库都会放在 /home/jiguotong/.conda/pkgs目录下，这样的好处就是，当在某个环境下已经下载好了某个库，再在另一个环境中还需要这个库时，就可以直接从pkgs目录下将该库复制至新环境而不用重复下载。
+
+pip install xxx：分两种情况
+一种情况就是当前conda环境的python是conda安装的(conda create -n xxxx python=3.x)，和系统的不一样，那么xxx会被安装到/home/jiguotong/.conda/envs/xxxx/lib/python3.x/site-packages文件夹中
+另一种情况是，如果当前conda环境用的是系统的python，那么xxx会通常会被安装到~/.local/lib/python3.x/site-packages文件夹中
+
+## pip源
+pip国内源是指在国内搭建的Python包镜像站点，它将官方源中的Python包镜像到国内服务器上，使得在国内使用pip安装Python包时可以直接从国内源下载，避免了网络延迟和访问限制的问题，提高了下载速度。
+查看pip源与配置pip源：
+``pip config list``
+``pip config set global.index-url xxxxxxxxx``
+
+⭐常用的国内源有：
+清华大学：https://pypi.tuna.tsinghua.edu.cn/simple
+阿里云：http://mirrors.aliyun.com/pypi/simple/
+豆瓣：http://pypi.douban.com/simple/
+网易：https://mirrors.163.com/pypi/simple/
+中国科技大学 https://pypi.mirrors.ustc.edu.cn/simple/
+
+## conda源
+```bash
+# 查看当前conda源
+conda config --get channels
+
+# 添加conda源
+conda config --add channels xxxxxx
+
+# 删除conda源
+conda config --remove channels xxxxxx
+```
+
+⭐常用的国内源有：
+0.默认的conda源是defaults
+1、清华大学镜像源（推荐）
+conda config --add channels https://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/main
+conda config --add channels https://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/free
+conda config --add channels https://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/r
+conda config --add channels https://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/pro
+conda config --add channels https://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/msys2
+2、中科大源（推荐）
+conda config --add channels https://mirrors.ustc.edu.cn/anaconda/pkgs/main/
+conda config --add channels https://mirrors.ustc.edu.cn/anaconda/pkgs/free/
+conda config --add channels https://mirrors.ustc.edu.cn/anaconda/cloud/conda-forge/
+conda config --add channels https://mirrors.ustc.edu.cn/anaconda/cloud/msys2/
+conda config --add channels https://mirrors.ustc.edu.cn/anaconda/cloud/bioconda/
+conda config --add channels https://mirrors.ustc.edu.cn/anaconda/cloud/menpo/
+conda config --add channels https://mirrors.ustc.edu.cn/anaconda/cloud/
+3、北京外国语大学镜像源（推荐）
+conda config --add channels https://mirrors.bfsu.edu.cn/anaconda/pkgs/main
+conda config --add channels https://mirrors.bfsu.edu.cn/anaconda/pkgs/free
+conda config --add channels https://mirrors.bfsu.edu.cn/anaconda/pkgs/r
+conda config --add channels https://mirrors.bfsu.edu.cn/anaconda/pkgs/pro
+conda config --add channels https://mirrors.bfsu.edu.cn/anaconda/pkgs/msys2
+4、阿里镜像源
+conda config --add channels https://mirrors.aliyun.com/pypi/simple/
+5、豆瓣的python镜像源
+conda config --add channels http://pypi.douban.com/simple/
+
+# python装饰器
+
+https://blog.csdn.net/qq_45476428/article/details/126962919
+https://zhuanlan.zhihu.com/p/567619814
+函数调用 -> 函数增强功能
+首先，函数的调用方式有以下形式：
+
+```python
+def my_function(author):
+    print("This is a function named", my_function.__name__)
+    print("The author of this function is", author)
+
+# 直接调用
+my_function('justin')
+
+# 间接调用
+func = my_function
+func('justin')
+```
+
+同时，可以把函数名字当作参数，传给另一个函数（此函数可以称之为装饰函数），示例程序如下：
+
+```python
+def my_function(author):
+    print("This is a function named", my_function.__name__)
+    print("The author of this function is", author)
+
+
+def my_decorator(func, *args, **kwargs):
+    print('****************Enter decorator {}****************'.format(my_decorator.__name__))
+    print('The function name decorated is', func.__name__)
+    print('----------------Start excute {}----------------'.format(func.__name__))
+    func(*args, **kwargs)
+    print('----------------End excute {}----------------'.format(func.__name__))
+    print('****************Leave decorator {}****************'.format(my_decorator.__name__))
+
+# 装饰函数裹挟着被装饰函数来运行
+my_decorator(my_function, 'justin')
+```
+
+如果写的再复杂一点，在装饰函数中将被装饰函数作为返回值返回给外层，则初具装饰器雏形，示例程序如下：
+
+```python
+def my_function(author):
+    print("This is a function named", my_function.__name__)
+    print("The author of this function is", author)
+
+
+def my_decorator(func):
+    def wrapper(*args, **kwargs):
+        print('****************Enter decorator {}****************'.format(my_decorator.__name__))
+        print('The function name decorated is', func.__name__)
+        print('----------------Start excute {}----------------'.format(func.__name__))
+        func(*args, **kwargs)
+        print('----------------End excute {}------------------'.format(func.__name__))
+        print('****************Leave decorator {}****************'.format(my_decorator.__name__))
+    return wrapper
+
+# 称此func为被my_decorator装饰之后的函数
+func = my_decorator(my_function)
+func('justin')
+```
+
+上个示例，定义了一个函数，并且用另一个函数（装饰函数）去修改这个函数的行为，这个功能就是Python装饰器所做的事情，Python中的装饰器提供了更简洁的方式来实现同样的功能，示例如下：(使用@的方式)
+```python
+def my_decorator(func):
+    def wrapper(*args, **kwargs):
+        print('****************Enter decorator {}****************'.format(my_decorator.__name__))
+        print('The function name decorated is', func.__name__)
+        print('----------------Start excute {}----------------'.format(func.__name__))
+        func(*args, **kwargs)
+        print('----------------End excute {}------------------'.format(func.__name__))
+        print('****************Leave decorator {}****************'.format(my_decorator.__name__))
+    return wrapper
+
+
+@my_decorator       # 使用my_decorator装饰my_function函数
+def my_function(author):
+    print("This is a function named", my_function.__name__)
+    print("The author of this function is", author)
+
+
+my_function('justin')   # 执行函数时无需再进行装饰，定义函数时已经自动被装饰
+```
+
+如果此时打印``print(my_function.__name__)``，得到的将是``wrapper``，函数的名字被装饰内部替代了，为了解决这一问题，可以借用functools库的wrap来实现，代码如下：
+```python
+from functools import wraps
+
+
+def my_decorator(func):
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        # 后续同上
+```
+
+同理，装饰类可以做以下实现：
+```python
+class My_decorator:
+    def __init__(self, func):
+        self.func = func
+    
+    # 当一个函数被装饰器类包装之后，函数的类型会变为装饰器类的实例，故此时无需再添加@wrap(func)，起不到任何作用，因此去掉wrapper这一层封装
+    def __call__(self, *args, **kwargs):
+        print('****************Enter decorator {}****************'.format(My_decorator.__name__))
+        print('The function name decorated is', self.func.__name__)
+        print('----------------Start excute {}----------------'.format(self.func.__name__))
+        self.func(*args, **kwargs)
+        print('----------------End excute {}------------------'.format(self.func.__name__))
+        print('****************Leave decorator {}****************'.format(My_decorator.__name__))
+
+
+@My_decorator       # 使用My_decorator类装饰my_function函数，此时该函数变为该类的一个实例
+def my_function(author):
+    print("The author of this function is", author)
+
+my_function('justin')
+```
+
+# python注册机制
+ToDo:
+https://zhuanlan.zhihu.com/p/567619814
+
+```python
+class Registry():
+    """
+    The registry that provides name -> object mapping, to support third-party
+    users' custom modules.
+
+    To create a registry (e.g. a backbone registry):
+
+    .. code-block:: python
+
+        BACKBONE_REGISTRY = Registry('BACKBONE')
+
+    To register an object:
+
+    .. code-block:: python
+
+        @BACKBONE_REGISTRY.register()
+        class MyBackbone():
+            ...
+
+    Or:
+
+    .. code-block:: python
+
+        BACKBONE_REGISTRY.register(MyBackbone)
+    """
+
+    def __init__(self, name):
+        """
+        Args:
+            name (str): the name of this registry
+        """
+        self._name = name
+        self._obj_map = {}
+
+    def _do_register(self, name, obj):
+        assert (name not in self._obj_map), (f"An object named '{name}' was already registered "
+                                             f"in '{self._name}' registry!")
+        self._obj_map[name] = obj
+
+    def register(self, obj=None):
+        """
+        Register the given object under the the name `obj.__name__`.
+        Can be used as either a decorator or not.
+        See docstring of this class for usage.
+        """
+        if obj is None:
+            # used as a decorator
+            def deco(func_or_class):
+                name = func_or_class.__name__
+                self._do_register(name, func_or_class)
+                return func_or_class
+
+            return deco
+
+        # used as a function call
+        name = obj.__name__
+        self._do_register(name, obj)
+
+    def get(self, name):
+        ret = self._obj_map.get(name)
+        if ret is None:
+            raise KeyError(f"No object named '{name}' found in '{self._name}' registry!")
+        return ret
+
+    def __contains__(self, name):
+        return name in self._obj_map
+
+    def __iter__(self):
+        return iter(self._obj_map.items())
+
+    def keys(self):
+        return self._obj_map.keys()
+
+
+GLOBAL_REGISTRY = Registry('test')
+
+
+@GLOBAL_REGISTRY.register()
+class My_class:
+    def __init__(self):
+        pass
+
+    def print_self(self):
+        print('i belong to class {}.'.format(My_class.__name__))
+pass
+
+tmp_object = MODEL_REGISTRY.get('My_class')()
+tmp_object.print_self()
+```
+
 # Pytorch——Tensor的储存机制以及view()、reshape()、reszie_()三者的关系和区别
 
 [tensor存储机制 view reshape contiguous](https://www.cnblogs.com/CircleWang/p/15658951.html)
@@ -506,6 +787,7 @@ from ..xxx import xxx           # 当前路径的上一级路径
 ```
 
 # 【Python】`__init__.py` 文件详解
+
 https://blog.csdn.net/u013589130/article/details/128743332
 
 # python打包工具setuptools的使用说明
@@ -515,7 +797,8 @@ https://blog.csdn.net/u013589130/article/details/128743332
 创建项目文件夹 -> 创建项目文件 -> 编写setup.py文件 -> 执行打包或安装命令 -> 生成打包文件
 
 ## 2.示例说明——python自写包打包
-:book: 参考：
+
+📖 参考：
 https://blog.51cto.com/u_16175523/7404708
 https://www.jb51.net/article/268987.htm#_label3_0_1_0
 https://www.jb51.net/article/126520.htm
@@ -528,6 +811,7 @@ demo
 └── setup.py
 
 display.py
+
 ```python
 def print_hello():
     print("hello")
@@ -562,7 +846,7 @@ setup(
     entry_points={
         'console_scripts': [
             'printauthor = display:print_author',
-            'printhello = display:print_hello',        
+            'printhello = display:print_hello',      
         ]
     },)
 ```
@@ -606,6 +890,7 @@ printauthor
 ```
 
 (5)打包流程解析
+
 ```python
 from setuptools import setup
 
@@ -617,14 +902,15 @@ setup(
     entry_points={
         'console_scripts': [
             'printauthor = display:print_author',# 此处的printauthor是命令行命令，例如可以直接执行printauthor，然后相当于执行的是display模块中的print_author函数
-            'printhello = display:print_hello',        
+            'printhello = display:print_hello',      
         ]
     }
 )
 ```
 
 ## 3.示例说明——C++代码扩展安装
-:book: 参考：
+
+📖 参考：
 [Pybind11](https://zhuanlan.zhihu.com/p/545094977)
 [pybind11使用指南](https://blog.csdn.net/zhuikefeng/article/details/107224507)
 
@@ -636,6 +922,7 @@ C_operations
     └── basic_op.h
 
 src/basic_op.h
+
 ```c
 #include <iostream>
 
@@ -645,6 +932,7 @@ int multi(int i, int j);
 ```
 
 src/basic_op.cpp
+
 ```c
 //basic_op.cpp
 #include <pybind11/pybind11.h>
@@ -668,6 +956,7 @@ PYBIND11_MODULE(basic_op, m) {
 ```
 
 setup.py
+
 ```python
 from setuptools import setup
 from torch.utils.cpp_extension import BuildExtension, CppExtension
@@ -698,6 +987,7 @@ setup(
 ![1697519860530](image/python学习笔记/1697519860530.png)
 
 (4)函数调用
+
 ```python
 import torch  # 不引入torch会报错libc10.so错误
 import basic_op
@@ -709,14 +999,16 @@ if __name__ == '__main__':
     res = basic_op.Cadd(5, 3)
     print(res)
 ```
+
 (5)流程解析
 PYBIND11_MODULE作用是将C++跟python绑定起来
 
-:star:如果报错ImportError: libc10.so: cannot open shared object file: No such file or directory
+⭐️如果报错ImportError: libc10.so: cannot open shared object file: No such file or directory
 libc10.so是基于pytorch生成的，因此需要先导入torch包，然后再导入依赖于torch的包：
 ``import torch``
 ``import basic_op``
 
 ## 4.示例说明——pytorch中构建CUDA扩展
+
 [pytorch的C++ extension写法](https://zhuanlan.zhihu.com/p/100459760)
 [PyTorch中构建和调用C++/CUDA扩展](https://blog.csdn.net/wolaiyeptx/article/details/121633882)
