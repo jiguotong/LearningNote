@@ -1,3 +1,8 @@
+## tensor的切片操作
+result=src[a, b, c], src是一个三维的tensor，若a, b, c均是多维tensor，则三者必须拥有同样的维度shape_，且result.shape最终会等于shape_。
+用几何的角度来解释就是，在h维度上切成h个面，将这h个面用重复的方式组成a.shape的形式，此时每一个面都需要w维度与c维度的值来确定到底是这个面上的哪个值。因此b与c必须同a有严格相同的shape结构，才能对应到每一个面上。若b或者c是一个一维的数，实际运算时会用到tensor的广播机制，例如 1 -> a.shape; 若b或者c是全部索引:，则代表该维度上所有值。
+例如，result = src[a, b, :]，其中src.shape=(h, w, c)，则result.shape=((a.shape, c))
+
 ## torch函数应用
 
 1、torch.argmax(input: Tensor, dim: Optional[_int]=None, keepdim: _bool=False, *, out: Optional[Tensor]=None)
