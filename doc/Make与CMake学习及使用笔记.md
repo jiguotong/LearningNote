@@ -111,6 +111,7 @@ gcc main.c -lm -o test.out          # -l是链接外部静态库，-lm是链接�
 ```
 
 ## 3.设置搜索路径——包含路径与链接路径
+
 默认情况下，gcc搜索以下目录的头文件：
 ```bash
 /usr/local/include/
@@ -123,9 +124,36 @@ gcc main.c -lm -o test.out          # -l是链接外部静态库，-lm是链接�
 /usr/lib/
 ```
 
-编译器选项-I和-L分别在包含路径和库搜索路径的开头添加新目录。
-#include <stdio.h>
-#include <gdbm.h>！！！！！！！！！！！！！！
+（1）包含路径
+编译器选项-I在包含路径开头添加新目录(相当于visual studio下的包含目录)
+```bash
+gcc -I /xxxx/xxxx/include test.c -o test.out 
+# 若有多个路径需要添加，linux下用冒号隔开，windows下面用分号隔开
+gcc -I /path/to/directory1:/path/to/directory2:/path/to/directory3 main.c -o output
+gcc -I "path\to\directory1";"path\to\directory2";"path\to\directory3" main.c -o output
+```
+
+（2）链接路径
+编译器选项-L在库搜索路径的开头添加新目录。(相当于visual studio下的库目录)
+```bash
+gcc -L /xxxx/xxxx/lib test.c -o test.out 
+# 若有多个路径需要添加，linux下用冒号隔开，windows下面用分号隔开
+gcc -I /path/to/directory1:/path/to/directory2:/path/to/directory3 main.c -o output
+gcc -I "path\to\directory1";"path\to\directory2";"path\to\directory3" main.c -o output
+```
+
+（3）使用环境变量设置包含路径与链接路径
+头文件和库的搜索路径也可以通过shell中的环境变量来控制。
+```bash
+C_INCLUDE_PATH=/opt/gdbm-1.8.3/include   
+export C_INCLUDE_PATH
+
+LIBRARY_PATH=/opt/gdbm-1.8.3/lib   
+export LIBRARY_PATH
+```
+
+## 4.共享库.so和静态库.a
+!!!!!!!!!!!!!!!!!!!!!!!ToDo!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 # 三、gcc/g++进阶使用——make自动化编译工具
 
