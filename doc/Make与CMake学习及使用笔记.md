@@ -30,7 +30,7 @@ Make的工作原理是通过读取一个名为**Makefile**的文件来确定编�
 Make的优势在于它能够智能地处理源代码文件的依赖关系，只重新编译有变动的文件，从而提高编译效率。此外，Make还支持并行编译，可以同时编译多个文件，进一步提高编译速度。
 Make最初是为Unix系统开发的，但现在已经被广泛应用于各种操作系统和编程语言中。Makefile的语法相对简单，易于编写和维护，使得Make成为开发和构建大型软件项目的重要工具。
 
-### 2.CMkake、CMakeLists.txt
+### 2.CMake、CMakeLists.txt
 
 CMake是一种**跨平台的自动化编译工具**，它能够生成适用于不同平台和编译器的构建文件（**如Makefile、Visual Studio项目文件等**），从而实现代码的跨平台编译和构建。
 CMake通过读取一个名为**CMakeLists.txt**的文件来确定编译规则和依赖关系。CMakeLists.txt中包含了一系列的命令和变量定义，用于指定源文件、依赖库、编译选项等信息。当执行CMake命令时，CMake会根据CMakeLists.txt中的内容**生成适用于目标平台和编译器的构建文件**。
@@ -53,8 +53,13 @@ GCC将源文件编译（Compile）成可执行文件或者库文件；
 
 # 二、gcc/g++基础使用
 参考链接：
+[gcc官方文档](https://gcc.gnu.org/onlinedocs/gcc)
+
 [c/c++之gcc简明教程](https://zhuanlan.zhihu.com/p/617412967?utm_id=0)
+
 [gcc和gdb的使用技巧](https://www.bilibili.com/video/BV1dP411Q7eJ/?spm_id_from=333.337.search-card.all.click&vd_source=1d204308936e108c95b2ecb8fcdbd781)
+
+[g++入门教程](https://www.cnblogs.com/create-serenditipy/p/16126280.html)
 ## 1.命令选项
 ```bash
 gcc是一个功能强大的编译器，提供了许多命令选项来控制编译过程和生成的目标文件。以下是gcc常用的一些命令选项及其作用：

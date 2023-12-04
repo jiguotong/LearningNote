@@ -112,6 +112,58 @@ nn.BatchNorm2d(in_channels)
 + 其次，通过减少梯度对参数或其初始值尺度的依赖性，使得我们可以使用较大的学习速率对网络进行训练，从而加速网络的收敛
 + 最后，由于在训练的过程中批量标准化所用到的均值和方差是在一小批样本(mini-batch)上计算的，而不是在整个数据集上，所以均值和方差会有一些小噪声产生，同时缩放过程由于用到了含噪声的标准化后的值，所以也会有一点噪声产生，这迫使后面的神经元单元不过分依赖前面的神经元单元。所以，它也可以看作是一种正则化手段，提高了网络的泛化能力，使得我们可以减少或者取消 Dropout，优化网络结构
 
+
+## tensorboard使用
+1.安装
+若使用pytorch框架，pip install tensorboardX
+若使用tensorflow框架，pip install tensorboard
+
+2.基础使用
+首先用SummaryWriter创建用于写events的对象，然后用add_scalar向该对象内写入数据，最后关闭写对象。可以将不同阶段(如训练与验证)写到一个写对象中，更方便对比。
+train.py
+```python
+from tensorboardX import SummaryWriter
+
+...
+
+# 一个写对象就对应着一个event
+train_writer = SummaryWriter(train_log_path)
+val_writer = SummaryWriter(valid_log_path)
+
+...
+
+for epoch in range(0, max_epochs):
+    
+    ...
+
+    for batch_idx, batch in enumerate(train_dataloader):
+        ...
+        loss1=...
+        loss2=...
+        n_batchsize = len(train_dataloader)
+        step = epoch * n_batchsize + batch_idx
+        train_writer.add_scalar('Loss/Batch/loss1', loss1, step)
+        train_writer.add_scalar('Loss/Batch/loss2', loss2, step)
+    
+    # 计算一个epoch下来平均的指标值
+    avg_loss1=total_loss1/n_batchsize
+    avg_loss2=total_loss2/n_batchsize
+    train_writer.add_scalar('Loss/Epoch/loss1', avg_loss1, epoch)
+    train_writer.add_scalar('Loss/Epoch/loss2', avg_loss2, epoch)
+
+train_writer.close()
+```
+
+3.可视化图表
+```bash
+# 另开一个终端
+tensorboard --logdir="/your/events_path"
+```
+
+tensorboard可视化图
+![1701654257329](image/PyTorch学习笔记/1701654257329.png)
+
+
 ## 2.8 各类卷积操作
 
 多通道标准卷积 https://blog.csdn.net/weixin_39450742/article/details/122722242
@@ -466,3 +518,4 @@ user: postgres_user
 password: 123456
 timeout: 20
 ```
+
