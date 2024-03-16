@@ -183,8 +183,10 @@ gcc -Wall -static -I/opt/gdbm-1.8.3/include/ -L/opt/gdbm-1.8.3/lib/ dbmain.c -lg
 ```
 # 三、gcc/g++进阶使用——make自动化编译工具
 
-## （一）
+## （一）make命令教程
+[阮一峰make命令教程](http://www.ruanyifeng.com/blog/2015/02/make.html)
 
+## （二）其他补充
 make -j 参数加快编译效率
 
 # 四、make进阶使用——CMake自动化编译工具

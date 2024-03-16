@@ -1,5 +1,31 @@
+# python 理论知识补充
+1.在Python程序中，一次新的赋值将创建一个新的变量，即使变量的名称相同，变量的标识(内存地址)也并不同。
+```python
+x=1
+print(id(x))
+
+x=2
+print(id(x))
+```
+2.类属性是同一个类得所有实例所共有的，直接在类体中独立定义，在引用时要使用"类名.类变量名"的格式，只要某个实例对其进行修改，就会影响这个类的其他实例。区别于实例属性。
+```python
+class A:
+    class_name = "A"        # 设置类属性
+    def __init__(self, x):
+        self.x = x          # 设置实例属性
+```
+
+3.is运算符和"=="运算符
+"=="是Python标准操作符中的**比较运算符**，用来比较判断两个对象的value(值)是否相同。
+"is"是Python标准操作符中的**身份运算符**，用来比较判断两个对象是否为同一个对象。
+
+
+
+
 # python包安装
+
 ## pip与conda
+
 conda 包管理工具
 pip 包管理工具
 miniconda3安装路径：usr/local/miniconda3
@@ -7,6 +33,7 @@ linux下创建新用户会产生 /home/jiguotong/.conda，内部有envs、pkgs�
 利用conda新建虚拟环境时，放在了 /home/jiguotong/.conda/envs里面
 
 ## pip install 与 conda install
+
 conda install xxx：这种方式安装的库都会放在 /home/jiguotong/.conda/pkgs目录下，这样的好处就是，当在某个环境下已经下载好了某个库，再在另一个环境中还需要这个库时，就可以直接从pkgs目录下将该库复制至新环境而不用重复下载。
 
 pip install xxx：分两种情况
@@ -14,6 +41,7 @@ pip install xxx：分两种情况
 另一种情况是，如果当前conda环境用的是系统的python，那么xxx会通常会被安装到~/.local/lib/python3.x/site-packages文件夹中
 
 ## pip源
+
 pip国内源是指在国内搭建的Python包镜像站点，它将官方源中的Python包镜像到国内服务器上，使得在国内使用pip安装Python包时可以直接从国内源下载，避免了网络延迟和访问限制的问题，提高了下载速度。
 查看pip源与配置pip源：
 ``pip config list``
@@ -27,6 +55,7 @@ pip国内源是指在国内搭建的Python包镜像站点，它将官方源中�
 中国科技大学 https://pypi.mirrors.ustc.edu.cn/simple/
 
 ## conda源
+
 ```bash
 # 查看当前conda源
 conda config --get channels
@@ -40,6 +69,7 @@ conda config --remove channels xxxxxx
 
 ⭐常用的国内源有：
 0.默认的conda源是defaults
+```bash
 1、清华大学镜像源（推荐）
 conda config --add channels https://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/main
 conda config --add channels https://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/free
@@ -64,12 +94,16 @@ conda config --add channels https://mirrors.bfsu.edu.cn/anaconda/pkgs/msys2
 conda config --add channels https://mirrors.aliyun.com/pypi/simple/
 5、豆瓣的python镜像源
 conda config --add channels http://pypi.douban.com/simple/
+```
+
 
 # python装饰器
 
 https://blog.csdn.net/qq_45476428/article/details/126962919
 https://zhuanlan.zhihu.com/p/567619814
+
 函数调用 -> 函数增强功能
+
 首先，函数的调用方式有以下形式：
 
 ```python
@@ -129,6 +163,7 @@ func('justin')
 ```
 
 上个示例，定义了一个函数，并且用另一个函数（装饰函数）去修改这个函数的行为，这个功能就是Python装饰器所做的事情，Python中的装饰器提供了更简洁的方式来实现同样的功能，示例如下：(使用@的方式)
+
 ```python
 def my_decorator(func):
     def wrapper(*args, **kwargs):
@@ -150,7 +185,8 @@ def my_function(author):
 my_function('justin')   # 执行函数时无需再进行装饰，定义函数时已经自动被装饰
 ```
 
-如果此时打印``print(my_function.__name__)``，得到的将是``wrapper``，函数的名字被装饰内部替代了，为了解决这一问题，可以借用functools库的wrap来实现，代码如下：
+如果此时打印 ``print(my_function.__name__)``，得到的将是 ``wrapper``，函数的名字被装饰内部替代了，为了解决这一问题，可以借用functools库的wrap来实现，代码如下：
+
 ```python
 from functools import wraps
 
@@ -162,11 +198,12 @@ def my_decorator(func):
 ```
 
 同理，装饰类可以做以下实现：
+
 ```python
 class My_decorator:
     def __init__(self, func):
         self.func = func
-    
+  
     # 当一个函数被装饰器类包装之后，函数的类型会变为装饰器类的实例，故此时无需再添加@wrap(func)，起不到任何作用，因此去掉wrapper这一层封装
     def __call__(self, *args, **kwargs):
         print('****************Enter decorator {}****************'.format(My_decorator.__name__))
@@ -184,7 +221,13 @@ def my_function(author):
 my_function('justin')
 ```
 
+# @property的使用方法
+1.修饰方法，是方法可以像属性一样访问。
+2.与所定义的属性配合使用，这样可以防止属性被修改。
+https://zhuanlan.zhihu.com/p/64487092
+
 # python注册机制
+
 ToDo:
 https://zhuanlan.zhihu.com/p/567619814
 
@@ -388,10 +431,6 @@ print(target)
 ### Python中的isinstance()函数
 
 https://blog.csdn.net/qq_36998053/article/details/122682397
-
-### Python函数装饰器的使用
-
-https://blog.csdn.net/qq_45476428/article/details/126962919
 
 ### def main() -> None: 的作用是声明该函数返回类型为None，即没有返回值，如果是 -> def main() -> int:则说明返回值是int类型
 
@@ -771,6 +810,7 @@ https://blog.csdn.net/BIT_Legend/article/details/130775553
 import sys
 print(sys.path)                 # 整个程序不管import多少个python包，其程序入口只有一个py脚本
 # sys.path.append("/xx/xx/xx")  # 增加 搜索路径 的方式
+# 或者直接在shell中设置变量，export PATHONPATH=.
  
  
 # 绝对路径
@@ -846,7 +886,7 @@ setup(
     entry_points={
         'console_scripts': [
             'printauthor = display:print_author',
-            'printhello = display:print_hello',      
+            'printhello = display:print_hello',  
         ]
     },)
 ```
@@ -902,7 +942,7 @@ setup(
     entry_points={
         'console_scripts': [
             'printauthor = display:print_author',# 此处的printauthor是命令行命令，例如可以直接执行printauthor，然后相当于执行的是display模块中的print_author函数
-            'printhello = display:print_hello',      
+            'printhello = display:print_hello',  
         ]
     }
 )

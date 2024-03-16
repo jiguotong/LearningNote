@@ -114,6 +114,8 @@ nn.BatchNorm2d(in_channels)
 
 
 ## tensorboard使用
+[tensorboardX官方Github](https://github.com/lanpa/tensorboardX)
+
 1.安装
 若使用pytorch框架，pip install tensorboardX
 若使用tensorflow框架，pip install tensorboard
@@ -154,7 +156,16 @@ for epoch in range(0, max_epochs):
 train_writer.close()
 ```
 
-3.可视化图表
+3.进阶使用
+```python
+# 导出网络结构图
+train_writer.add_graph(model, torch.Tensor(1,1024,3), False)
+
+# 导出所有常量为文件
+train_writer.export_scalars_to_json("all_scalars.json")
+```
+
+4.可视化图表
 ```bash
 # 另开一个终端
 tensorboard --logdir="/your/events_path"
@@ -163,7 +174,79 @@ tensorboard --logdir="/your/events_path"
 tensorboard可视化图
 ![1701654257329](image/PyTorch学习笔记/1701654257329.png)
 
+![1701659621820](image/PyTorch学习笔记/1701659621820.png)
 
+## 2.7 谈谈各种归一化操作Normalization
+### 2.7.0 协变量偏移
+在机器学习中，一般会假设模型的输入数据的分布是稳定的。若是输入数据的分布发生变化，这种现象被称为**协变量偏移(covariate shift)。**。同理，在一个复杂的机器学习系统中，也会要求系统的各个子模块在训练过程中输入分布是稳定的。若是不满足这一条件，则会称为**内部协变量偏移(internal covariate shift, ICS)**。每一层隐藏层经过一个批次的前向传播和反向传播，参数会更新，于是下一个批次再进行前向传播的时候，计算参数已经与上一个批次不同，由此数据分布发生变化，产生所谓的协变量偏移。
+
+### 2.7.1 什么是归一化操作
+归一化操作就是加入一个新的计算层，对数据的分布进行额外的约束，将一列数据变化到某个固定区间(范围)中。在标准化的基础上，使用其他参数进行修正分布。
+常见的归一化操作有：**批归一化(Batch Normalization)**、**层归一化(Layer Normalization)**、**实例归一化(Instance Normalization)**、**组归一化(Group Normalization)**
+
+[归一化类型图解](https://blog.csdn.net/weixin_44492824/article/details/124025689)
+[归一化类型以及使用场景](https://zhuanlan.zhihu.com/p/638944399)
+
+### 2.7.2 为什么要有归一化操作
+协变量偏移带来的问题：
+- 收敛速度慢，学习不稳定
+- 产生梯度消失问题
+
+### 2.7.3 如何做归一化操作
+
+注：以批归一化为例
+```python
+#在PyTorch中，nn.BatchNorm1d是一个用于实现一维输入张量的批标准化（batch normalization）操作的类。
+import torch
+import torch.nn as nn
+
+# 创建一个批标准化层
+batch_norm = nn.BatchNorm1d(64)
+
+# 创建一个随机输入张量
+input = torch.randn(32, 64)
+
+# 应用批标准化
+output = batch_norm(input)
+print(torch.mean(input[:,0]))
+print(torch.mean(output[:,0,]))
+pass
+
+
+#在PyTorch中，nn.BatchNorm2d是一个用于实现二维输入张量的批标准化（batch normalization）操作的类，对通道进行归一化
+import torch
+import torch.nn as nn
+
+# 创建一个批标准化层
+batch_norm = nn.BatchNorm2d(64)
+
+# 创建一个随机输入张量
+input = torch.randn(32, 64, 28, 28)
+
+# 应用批标准化
+output = batch_norm(input)
+print(torch.mean(input[:,0,:,:]))
+print(torch.mean(output[:,0,:,:]))
+pass
+
+
+#在PyTorch中，nn.BatchNorm3d是一个用于实现三维输入张量的批标准化（batch normalization）操作的类。
+import torch
+import torch.nn as nn
+
+# 创建一个批标准化层
+batch_norm = nn.BatchNorm3d(64)
+
+# 创建一个随机输入张量
+input = torch.randn(32, 64, 28, 28, 28)
+
+# 应用批标准化
+output = batch_norm(input)
+
+print(torch.mean(input[:,0,:,:,:]))
+print(torch.mean(output[:,0,:,:,:]))
+pass
+```
 ## 2.8 各类卷积操作
 
 多通道标准卷积 https://blog.csdn.net/weixin_39450742/article/details/122722242
