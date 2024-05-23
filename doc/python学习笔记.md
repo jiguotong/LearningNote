@@ -19,9 +19,64 @@ class A:
 "=="是Python标准操作符中的**比较运算符**，用来比较判断两个对象的value(值)是否相同。
 "is"是Python标准操作符中的**身份运算符**，用来比较判断两个对象是否为同一个对象。
 
+4.getattr作用以及用法
+作用：getattr()是一个内置函数，用于获取对象的属性值。它的作用是通过属性名获取对象的属性值，如果属性不存在，则可以提供一个默认值；也可以是从某个文件或模块中获取一个类等要素
+语法：
+``getattr(object, name[, default])``
+使用示例：
+```python
+class Person:
+    def __init__(self, name, age):
+        self.name = name
+        self.age = age
 
+person = Person("John", 25)
 
+# 获取属性值
+name = getattr(person, "name")
+age = getattr(person, "age")
+print(name)  # 输出: John
+print(age)  # 输出: 25
 
+# 获取属性值，提供默认值
+city = getattr(person, "city", "Unknown")
+print(city)  # 输出: Unknown
+
+# 获取不存在的属性，不提供默认值
+gender = getattr(person, "gender")  # 抛出 AttributeError 异常
+```
+
+# python标准库importlib作用及其使用方法
+importlib 是 Python 标准库中的一个模块，用于动态加载和导入模块。它提供了一系列函数和类，可以在运行时动态地加载和导入模块，而不需要在代码中提前声明或固定导入的模块。
+importlib 的作用和使用方法如下：
+**动态加载模块**：使用 importlib.import_module() 函数可以在运行时动态加载指定的模块。它的参数可以是模块的完整名称，也可以是相对于当前模块的相对路径。
+**动态导入模块**：使用 importlib.reload() 函数可以重新导入指定的模块。这个函数会重新执行模块中的代码，并更新模块中的变量和函数定义。
+**动态查找模块**：使用 importlib.find_loader() 函数可以查找指定模块的加载器。这个函数返回一个加载器对象，可以通过它来获取模块的信息和执行相关操作。
+**动态创建模块**：使用 importlib.util.module_from_spec() 函数可以根据指定规范创建一个空的模块对象。这个函数返回一个模块对象，可以通过它来添加变量和函数定义。
+**动态执行模块**：使用 importlib.util.module_from_spec() 函数创建的模块对象可以通过 exec_module() 方法来执行模块中的代码。这个方法会将模块对象作为全局命名空间，执行模块中的代码。
+总结来说，importlib 提供了一种灵活、动态的方式来加载、导入和执行模块，使得 Python 程序可以在运行时根据需要动态地加载和使用模块。
+
+# AverageMeter类的作用及使用方法
+AverageMeter是一个用于计算平均值的工具类。它可以用于跟踪和计算一系列数值的平均值和总和。
+使用示例如下：
+```python
+from utils import AverageMeter
+
+# 创建一个AverageMeter对象
+meter = AverageMeter(name='loss')
+
+# 模拟训练循环
+for i in range(10):
+    # 模拟计算得到的loss值
+    loss = i * 0.1
+    
+    # 更新AverageMeter对象的值
+    meter.update(loss)
+    
+# 打印平均值和总和
+print('Average loss:', meter.avg)
+print('Total loss:', meter.sum)
+```
 # python包安装
 
 ## pip与conda

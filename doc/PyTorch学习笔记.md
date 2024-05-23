@@ -112,6 +112,111 @@ nn.BatchNorm2d(in_channels)
 + 其次，通过减少梯度对参数或其初始值尺度的依赖性，使得我们可以使用较大的学习速率对网络进行训练，从而加速网络的收敛
 + 最后，由于在训练的过程中批量标准化所用到的均值和方差是在一小批样本(mini-batch)上计算的，而不是在整个数据集上，所以均值和方差会有一些小噪声产生，同时缩放过程由于用到了含噪声的标准化后的值，所以也会有一点噪声产生，这迫使后面的神经元单元不过分依赖前面的神经元单元。所以，它也可以看作是一种正则化手段，提高了网络的泛化能力，使得我们可以减少或者取消 Dropout，优化网络结构
 
+6.torch.bincount()
+``torch.bincount(input, weights=None, minlength=0) → Tensor``
+
+参数：
++ input：输入的一维整数张量
++ weights（可选）：与input张量相同形状的张量，用于为每个值指定权重
++ minlength（可选）：输出张量的最小长度
+
+返回值：**一个具有长度为max(input) + 1的一维长整型张量，其中索引i处的值表示i在输入张量中出现的频次**
+
+示例：
+```python
+
+import torch
+ 
+input = torch.tensor([1, 2, 3, 2, 1, 1])    # 1, 2, 3, 2, 1, 1
+counts = torch.bincount(input)      # 0, 3, 2, 1，代表着，0出现了0次，1出现了3次，2出现了2次，3出现了1次
+
+```
+
+7.torch.scatter、torch_scatter.scatter、torch_scatter.segment_csr三个函数的递进关系
+https://zhuanlan.zhihu.com/p/587975275
+https://zhuanlan.zhihu.com/p/544368788
+https://pytorch-scatter.readthedocs.io/en/latest/functions/segment_csr.html
+
+8.torch.einsum爱因斯坦求和
+
+**DEFINES:**
+- Free Indices：Are the indices specified in the output.
+- Summation Indices: All other indices. Those that appear in the input augument but NOT in output specification.
+
+**RULES:**
+- 1.Repeating letters in different inputs means those values will be multiplied and those products will be the output.
+- 2.Omitting a letter means that axis will be summed.
+- 3.We can return the unsummed axis in any order.
+
+**具体总结:**
+- 1.当源数组仅为1个，不涉及到相乘，只会是取数或某种求和
+- 2.被省略的标记位会被求和规约，沿此维度进行求和
+- 3.在不同输入中同时存在的标记位会涉及到相乘
+- 4.某些特殊操作下会涉及到自动广播
+
+**代码示例：**
+```python
+"""""
+@Author     :   jiguotong
+@Contact    :   1776220977@qq.com
+@site       :   
+-----------------------------------------------
+@Time       :   2024/7/8
+@Description:   本脚本用于测试torch.einsum的用法
+""" ""
+
+import torch
+
+x = torch.rand((2, 3))
+
+# Permutation of Tensors
+torch.einsum("ij->ji", x)
+
+# Summation
+torch.einsum("ij->", x)
+
+# Column Sum
+torch.einsum("ij->j", x)
+
+# Row Sum
+torch.einsum("ij->i", x)
+
+# Matrix-Vector Multiplication
+v = torch.rand((1, 3))
+torch.einsum("ij, kj->ik", x, v)
+
+# Matrix-Matrix Multiplication
+torch.einsum("ij, kj->ik", x, x)  # equal to   x.mm(x.transpose(1,0))
+
+# Dot product first row with first row of matrix
+torch.einsum("i,i->", x[0], x[0])
+
+# Dot product with matrix
+torch.einsum("ij, ij->", x, x)
+
+# Hadamard Product (element-wise multiplication)，若输入维度不匹配，可自动广播
+torch.einsum("ij, ij->ij", x, x)
+
+# Vextor Outer Product
+a = torch.rand((3))
+b = torch.rand((5))
+torch.einsum("i,j->ij", a, b)
+
+# Batch Matrix Multiplication
+a = torch.rand((3, 2, 5))
+b = torch.rand((3, 5, 3))
+torch.einsum("ijk,ikl->ijl", a, b)
+
+# Matrix Diagonal
+x = torch.rand((3, 3))
+torch.einsum("ii->i", x)
+
+# Matrix Trace
+torch.einsum("ii->", x)
+```
+**参考资料：**
+- https://www.youtube.com/watch?v=pkVwUVEHmfI
+- https://blog.csdn.net/ViatorSun/article/details/122710515
 
 ## tensorboard使用
 [tensorboardX官方Github](https://github.com/lanpa/tensorboardX)
@@ -129,8 +234,10 @@ from tensorboardX import SummaryWriter
 ...
 
 # 一个写对象就对应着一个event
-train_writer = SummaryWriter(train_log_path)
-val_writer = SummaryWriter(valid_log_path)
+train_log_path = '.'    # 在当前工作目录下保存，当前工作目录即os.getcwd()所得到的目录    
+valid_log_path = '.'    
+train_writer = SummaryWriter(train_log_path, filename_suffix='TRAIN')
+val_writer = SummaryWriter(valid_log_path, filename_suffix='VAL')
 
 ...
 
@@ -602,3 +709,5 @@ password: 123456
 timeout: 20
 ```
 
+## 3.2 Hook机制————为所欲为的钩子
+https://www.cnblogs.com/ArsenalfanInECNU/p/12871887.html
