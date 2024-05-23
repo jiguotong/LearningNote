@@ -129,8 +129,10 @@ from tensorboardX import SummaryWriter
 ...
 
 # 一个写对象就对应着一个event
-train_writer = SummaryWriter(train_log_path)
-val_writer = SummaryWriter(valid_log_path)
+train_log_path = '.'    # 在当前工作目录下保存，当前工作目录即os.getcwd()所得到的目录    
+valid_log_path = '.'    
+train_writer = SummaryWriter(train_log_path, filename_suffix='TRAIN')
+val_writer = SummaryWriter(valid_log_path, filename_suffix='VAL')
 
 ...
 
