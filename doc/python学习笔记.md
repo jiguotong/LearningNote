@@ -56,6 +56,58 @@ importlib 的作用和使用方法如下：
 **动态执行模块**：使用 importlib.util.module_from_spec() 函数创建的模块对象可以通过 exec_module() 方法来执行模块中的代码。这个方法会将模块对象作为全局命名空间，执行模块中的代码。
 总结来说，importlib 提供了一种灵活、动态的方式来加载、导入和执行模块，使得 Python 程序可以在运行时根据需要动态地加载和使用模块。
 
+
+# Python——lambda匿名函数的应用
+## 一.语法  
+lambda 参数1, 参数2, ... : 表达式  
+对参数做表达式的操作，并返回结果，表达式只能有一个  
+可搭配其他函数使用  
+## 二.示例
+### 1.简单函数示例  
+```python
+# 创建一个简单的 lambda 函数，参数为x,y，操作为x+y并返回
+add = lambda x, y: x + y
+print(add(3, 5))  # 输出 8
+```  
+### 2.列表排序  
+Lambda 表达式可以作为 sorted() 函数的 key 参数，用于指定排序规则。  
+```python  
+# 定义一个列表
+books = [
+    {'title': 'Python基础教程', 'author': 'Magnus Lie Hetland'},
+    {'title': '流畅的Python', 'author': 'Luciano Ramalho'},
+    {'title': 'Python Cookbook', 'author': 'David Beazley'}
+]
+
+# 按照书名排序
+sorted_books = sorted(books, key=lambda x: x['title'])
+# lambda x: x['title']：定义一个匿名函数，接收一个字典作为参数，并返回字典中的 'title' 值，用于按照书名排序。
+print(sorted_books)
+```  
+### 3.过滤列表  
+Lambda 表达式可以作为 filter() 函数的参数，用于筛选列表中的元素。  
+```python
+# 定义一个列表
+numbers = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+
+# 筛选出偶数
+even_numbers = list(filter(lambda x: x % 2 == 0, numbers))
+# lambda x: x % 2 == 0：定义一个匿名函数，接收一个数字作为参数，并判断是否为偶数。
+
+print(even_numbers)  # 输出 [2, 4, 6, 8, 10]
+```  
+### 4.元素操作  
+Lambda 表达式可以作为 map() 函数的参数，用于对列表中的每个元素进行操作。  
+```python  
+# 定义一个列表
+numbers = [1, 2, 3, 4, 5]
+
+# 将每个元素平方
+squared_numbers = list(map(lambda x: x**2, numbers))
+# lambda x: x**2：定义一个匿名函数，接收一个数字作为参数，并返回它的平方。
+print(squared_numbers)  # 输出 [1, 4, 9, 16, 25]
+
+```
 # AverageMeter类的作用及使用方法
 AverageMeter是一个用于计算平均值的工具类。它可以用于跟踪和计算一系列数值的平均值和总和。
 使用示例如下：
