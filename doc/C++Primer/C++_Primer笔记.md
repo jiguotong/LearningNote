@@ -107,6 +107,304 @@ int main(){
     Base base8；
     base8 = getBase();//此处调用了Base的移动构造函数，将右值引用传递给base8
 }   
+```  
+# 第十四章 重载运算与类型转换  
+## 14.1 基本概念  
+⭐operator  
+⭐如果一个运算符函数是成员函数，则他的第一个运算对象绑定到隐式的this指针上。  
+⭐对于一个运算符函数来说，它或者是类的成员，或者至少含有一个类类型的参数。  
+⭐内置类型的运算对象不能重载。  
+⭐可以重载的运算符  
+![1738743051119](image/C++_Primer笔记/1738743051119.png)  
+
+## 14.2 输入和输出运算符的重载-(必须是非成员函数，因此常常设置为类的友元函数)-返回stream形参的引用  
+### (1)重载输出运算符<<  
+⭐school.h中:
+```c++
+friend std::ostream& operator<<(std::ostream& os, const School& qr);
+```
+
+⭐school.cpp中:
+```c++
+std::ostream& operator<<(std::ostream& os, const School& school)
+{
+	os << school.m_name << " "<<school.m_classNum << " " << school.m_totalStudents;
+	return os;
+}
+```
+
+### (2)重载输入运算符>>  
+⭐school.h中:  
+```c++
+friend std::istream& operator>>(std::istream& is, School& qr);
+```  
+⭐school.cpp中:  
+```c++
+std::istream& operator>>(std::istream& is, School& qr)
+{	
+	is >> qr.m_name;
+	if (!is)				//必须考虑到输入失败的情况
+		qr.m_name = "";
+	return is;
+}
+```  
+## 14.3 复制运算符的重载-(必须定义为成员函数)-返回左侧运算对象的引用   
+### (1)重载赋值运算符=  
+⭐school.h中:
+```c++
+School& operator=(const School& school);
+```  
+⭐school.cpp中:
+```c++
+School& School::operator=(const School& school)
+{
+	this->m_classNum = school.m_classNum;
+	this->m_name = school.m_name;
+	this->m_totalStudents = school.m_totalStudents;
+	return *this;
+}
+```  
+### (2)重载复合赋值运算符+=  
+⭐school.h中:
+```c++
+School& operator+=(const School & school);	
+```
+⭐school.cpp中:
+```c++
+School& School::operator+=(const School& school)
+{
+	this->m_name = this->m_name +"/"+ school.m_name;
+	this->m_classNum += school.m_classNum;
+	this->m_totalStudents += school.m_totalStudents;
+	return *this;
+}
+```  
+## 14.4 算数运算符的重载-(通常定义为非成员函数)-返回局部对象的副本，不能返回引用，因为局部对象内存已释放  
+### (1)重载算数运算符+  
+⭐school.h中:  
+```c++
+School operator+(const School& school1, const School& school2);
+```  
+⭐school.cpp中:  
+```c++
+School operator+(const School& school1, const School& school2) 
+{
+	School temp = school1;
+	temp += school2;					//用复合赋值运算符来实现重载算数运算符
+	return temp;
+}
+```  
+### (2)重载相等运算符==  
+⭐school.h中:  
+```c++
+bool operator==(const School& school1, const School& school2);
+```  
+⭐school.cpp中:  
+```c++
+bool operator==(const School& school1, const School& school2)
+{
+	if (school1.m_name == school2.m_name)
+		return true;
+	else
+		return false;
+}
+```  
+### (3)重载不相等运算符!=  
+⭐school.h中:  
+```c++
+bool operator!=(const School& school1, const School& school2);
+```  
+⭐school.cpp中:  
+```c++
+bool operator!=(const School& school1, const School& school2)
+{
+	if (school1 == school2)				//用相等运算符来实现重载不相等运算符
+		return true;
+	else
+		return false;
+}
+```  
+### (4)重载大于运算符>  
+⭐school.h中:  
+```c++
+bool operator<(const School& school1, const School& school2);
+```  
+⭐school.cpp中:  
+```c++
+bool operator<(const School& school1, const School& school2)
+{
+	if(school1.GetTotalStudents()< school2.GetTotalStudents())
+		return true;
+	else
+		return false;
+}
+```  
+## 14.5 下标运算符的重载-(必须定义为成员函数)-通常返回所访问元素的引用  
+```c++
+std::string& operator[](std::size_t n)
+{
+    return this->elements[n];
+}
+```  
+
+## 14.6 递增和递减运算符的重载  
+⭐school.h中
+```c++
+School& operator++();
+School& operator--();
+```  
+⭐school.cpp中
+```c++
+//前置递增运算符
+School& School::operator++()
+{
+	++this->m_classNum;
+	return *this;
+}
+//前置递减运算符
+School& School::operator--()
+{
+	if(this->m_classNum!=0)
+		--this->m_classNum;
+	return *this;
+}
+```  
+
+## 14.6 成员访问运算符  
+## 14.7 函数调用运算符  
+## 14.8 重载、类型转换与运算符  
+
+## 14.9 重载运算符汇总  
+**school.h**  
+```c++
+#pragma once
+#include <string>
+#include <iostream>
+class School
+{
+	friend std::ostream& operator<<(std::ostream& os, const School& qr);		//不是成员函数，是友元函数，目的是访问该类成员的私有变量
+	friend std::istream& operator>>(std::istream& is, School& qr);
+public:
+	School();
+	School(std::string name, unsigned classNum, unsigned totalStudents) :m_name(name),m_classNum(classNum), m_totalStudents(totalStudents) {};		//初始化构造函数
+	~School();
+
+	const unsigned GetClassNum() const { return this->m_classNum; };				//第一个const是指返回的对象是const对象，第二个const是为了配合隐式的this指针，变为const this，以便const对象能够调用此函数
+	const unsigned GetTotalStudents() const { return this->m_totalStudents; };		//
+private:
+	unsigned m_classNum;				//学校有多少班级
+	unsigned m_totalStudents;			//学校总共有多少人
+public:
+	std::string m_name;					//学校名字
+
+
+public:
+	School& operator=(const School& school);			//重载赋值运算符
+	School& operator+=(const School & school);			//重载复合赋值运算符
+	School& operator++();								//重载前置递增运算符++school
+	School& operator--();								//重载前置递减运算符--school
+};
+
+School operator+(const School& school1, const School& school2);
+bool operator==(const School& school1, const School& school2);
+bool operator!=(const School& school1, const School& school2);
+bool operator<(const School& school1, const School& school2);
+bool operator>(const School& school1, const School& school2);
+```  
+**school.cpp**  
+```c++
+#include "school.h"
+School::School()
+{
+}
+
+School::~School()
+{
+}
+
+//赋值运算符
+School& School::operator=(const School& school)
+{
+	this->m_classNum = school.m_classNum;
+	this->m_name = school.m_name;
+	this->m_totalStudents = school.m_totalStudents;
+	return *this;
+}
+//复合赋值运算符
+School& School::operator+=(const School& school)
+{
+	this->m_name = this->m_name +"/"+ school.m_name;
+	this->m_classNum += school.m_classNum;
+	this->m_totalStudents += school.m_totalStudents;
+	return *this;
+}
+//前置递增运算符
+School& School::operator++()
+{
+	++this->m_classNum;
+	return *this;
+}
+//前置递减运算符
+School& School::operator--()
+{
+	if(this->m_classNum!=0)
+		--this->m_classNum;
+	return *this;
+}
+//非成员运算符
+//输出运算符<<重载
+std::ostream& operator<<(std::ostream& os, const School& school)
+{
+	os << school.m_name << " "<<school.m_classNum << " " << school.m_totalStudents;
+	return os;
+}
+//输出运算符<<重载
+std::istream& operator>>(std::istream& is, School& qr)
+{	
+	is >> qr.m_name;
+	if (!is)				//必须考虑到输入失败的情况
+		qr.m_name = "";
+	return is;
+}
+//算数运算符+重载
+School operator+(const School& school1, const School& school2) 
+{
+	School temp = school1;
+	temp += school2;					//用复合赋值运算符来实现重载算数运算符
+	return temp;
+}
+//关系运算符==重载
+bool operator==(const School& school1, const School& school2)
+{
+	if (school1.m_name == school2.m_name)
+		return true;
+	else
+		return false;
+}
+//关系运算符!=重载
+bool operator!=(const School& school1, const School& school2)
+{
+	if (school1 == school2)				//用相等运算符来实现重载不相等运算符
+		return true;
+	else
+		return false;
+}
+//关系运算符<重载
+bool operator<(const School& school1, const School& school2)
+{
+	if(school1.GetTotalStudents()< school2.GetTotalStudents())
+		return true;
+	else
+		return false;
+}
+//关系运算符>重载
+bool operator>(const School& school1, const School& school2)
+{
+	if (school1.GetTotalStudents() > school2.GetTotalStudents())
+		return true;
+	else
+		return false;
+}
 ```
 
 # 第十五章 面向对象程序设计  
@@ -149,7 +447,6 @@ public:
 https://www.jianshu.com/p/d07e0ac0ba3c  
 ⭐虚函数是virtual关键字修饰的成员函数，在某基类中声明为virtual并在一个或多个派生类中被重新定义的成员函数，只需要在声明的时候加virtual，例：  
 ```c++
-
 class Graphic {
 public:
 	Graphic() = default;
@@ -169,12 +466,12 @@ int main()
 	
 	return 0;
 }
-```
+```  
 
 ⭐回避虚函数的机制：使用**作用域运算符**，Graphic::GetType();  
 ⭐**纯虚函数**：声明虚函数的时候令函数体=0，只能出现在类内部的虚函数声明语句处。  
-``virtual void display()=0;  ``
-⭐含有纯虚函数的类是抽象基类，不能创建抽象基类的对象， 此基类只能是一个接口，用于被继承，在子类中需要重写虚函数。  
+``virtual void display()=0;  ``  
+⭐含有纯虚函数的类是抽象基类，不能创建抽象基类的对象， 此基类只能是一个接口，用于被继承，在子类中需要重写虚函数。    
 
 ## 15.5 动态绑定  
 ⭐动态绑定是在**运行期间**发生的绑定，发生动态绑定的函数的运行版本由**传入的实际参数类型**决定，在运行时选择函数的版本(**选择是基类的版本还是派生类的版本**)，所以动态绑定又称运行时绑定，动态绑定是C++的多态实现的一种形式。**在C++中，当使用基类的引用或指针调用一个虚函数时将发生动态绑定**。  
