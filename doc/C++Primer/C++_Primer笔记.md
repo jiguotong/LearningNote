@@ -109,6 +109,84 @@ int main(){
 }   
 ```
 
+# 第十五章 面向对象程序设计  
+## 15.1 OOP概述  
+⭐面向对象程序设计：object-oriented programming, oop，核心思想是数据抽象、继承和动态绑定。  
+⭐继承：派生类可以继承基类的成员与函数，也可以重写自己的函数覆盖基类的函数。  
+⭐下文笔记顺序：普通继承->类型转换与继承->虚函数->动态绑定->多态  
+
+## 15.2 普通继承：即派生类可以使用基类的成员以及函数
+⭐定义基类：
+```c++
+class Graphic{
+public:
+    Graphic()=default;
+    double GetAera();
+    double GetVolume();
+public:
+    unsigned sides;
+    unsigned angles;
+    bool isRegular;
+}  
+```  
+⭐定义派生类：
+```c++
+class Triangle: public Graphic{
+public:
+    Triangle()=default;
+}
+```  
+## 15.3 类型转换与继承  
+⭐静态类型与动态类型：一个表达式的静态类型在编译时总是已知的，它是变量声明时的类型或表达式生成的类型；动态类型则是变量或表达式表示的内存中的对象的类型。例：Base *p = new Derived ()；  //指针p的静态类型是Base，而动态类型是Derived
+**注：只有指针或者引用才会出现静态类型与动态类型不一致的情况。**  
+⭐类型转换(派生类转换为基类)  
+![1738738708366](image/C++_Primer笔记/1738738708366.png)  
+``Graphic* p = new Triangle();		//派生类转换为基类``
+``Base *p = new Derived ()；      //派生类转换为基类``  
+## 15.4 虚函数
+⭐为什么要有虚函数
+父类中不能调用子类的函数
+https://www.jianshu.com/p/d07e0ac0ba3c  
+⭐虚函数是virtual关键字修饰的成员函数，在某基类中声明为virtual并在一个或多个派生类中被重新定义的成员函数，只需要在声明的时候加virtual，例：  
+```c++
+
+class Graphic {
+public:
+	Graphic() = default;
+	virtual std::string GetType(){ return "Graphic";}
+};
+class Triangle：public Graphic
+{
+public:
+	Triangle() = default;
+	std::string GetType(){ return "Triangle";}
+};
+
+int main()
+{
+	Graphic *p = new Triangle();        //派生类转换为基类
+	cout<<p->GetType()<<endl;         //此时打印Triangle
+	
+	return 0;
+}
+```
+
+⭐回避虚函数的机制：使用**作用域运算符**，Graphic::GetType();  
+⭐**纯虚函数**：声明虚函数的时候令函数体=0，只能出现在类内部的虚函数声明语句处。  
+``virtual void display()=0;  ``
+⭐含有纯虚函数的类是抽象基类，不能创建抽象基类的对象， 此基类只能是一个接口，用于被继承，在子类中需要重写虚函数。  
+
+## 15.5 动态绑定  
+⭐动态绑定是在**运行期间**发生的绑定，发生动态绑定的函数的运行版本由**传入的实际参数类型**决定，在运行时选择函数的版本(**选择是基类的版本还是派生类的版本**)，所以动态绑定又称运行时绑定，动态绑定是C++的多态实现的一种形式。**在C++中，当使用基类的引用或指针调用一个虚函数时将发生动态绑定**。  
+⭐如上15.4的例子，指针p在运行时选择用new Triangle所决定的版本，因此发生动态绑定。  
+
+## 15.6 多态  
+⭐使用基类引用或指针的静态类型与动态类型不同这一事实正是C++语言支持多态性的根本所在。  
+⭐调用成员函数时，会根据调用函数的对象的类型来执行不同的函数。  
+
+## 15.7 访问控制与继承  
+![1738741217995](image/C++_Primer笔记/1738741217995.png)  
+
 # 第十六章 模板与泛型编程
 
 模板——是一段带有类型参数的程序代码，可以通过给这些参数提供一些类型来得到针对不同类型的具体代码。
