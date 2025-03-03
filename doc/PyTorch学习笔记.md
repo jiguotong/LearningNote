@@ -218,70 +218,7 @@ torch.einsum("ii->", x)
 - https://www.youtube.com/watch?v=pkVwUVEHmfI
 - https://blog.csdn.net/ViatorSun/article/details/122710515
 
-## tensorboard使用
-[tensorboardX官方Github](https://github.com/lanpa/tensorboardX)
 
-1.安装
-若使用pytorch框架，pip install tensorboardX
-若使用tensorflow框架，pip install tensorboard
-
-2.基础使用
-首先用SummaryWriter创建用于写events的对象，然后用add_scalar向该对象内写入数据，最后关闭写对象。可以将不同阶段(如训练与验证)写到一个写对象中，更方便对比。
-train.py
-```python
-from tensorboardX import SummaryWriter
-
-...
-
-# 一个写对象就对应着一个event
-train_log_path = '.'    # 在当前工作目录下保存，当前工作目录即os.getcwd()所得到的目录    
-valid_log_path = '.'    
-train_writer = SummaryWriter(train_log_path, filename_suffix='TRAIN')
-val_writer = SummaryWriter(valid_log_path, filename_suffix='VAL')
-
-...
-
-for epoch in range(0, max_epochs):
-    
-    ...
-
-    for batch_idx, batch in enumerate(train_dataloader):
-        ...
-        loss1=...
-        loss2=...
-        n_batchsize = len(train_dataloader)
-        step = epoch * n_batchsize + batch_idx
-        train_writer.add_scalar('Loss/Batch/loss1', loss1, step)
-        train_writer.add_scalar('Loss/Batch/loss2', loss2, step)
-    
-    # 计算一个epoch下来平均的指标值
-    avg_loss1=total_loss1/n_batchsize
-    avg_loss2=total_loss2/n_batchsize
-    train_writer.add_scalar('Loss/Epoch/loss1', avg_loss1, epoch)
-    train_writer.add_scalar('Loss/Epoch/loss2', avg_loss2, epoch)
-
-train_writer.close()
-```
-
-3.进阶使用
-```python
-# 导出网络结构图
-train_writer.add_graph(model, torch.Tensor(1,1024,3), False)
-
-# 导出所有常量为文件
-train_writer.export_scalars_to_json("all_scalars.json")
-```
-
-4.可视化图表
-```bash
-# 另开一个终端
-tensorboard --logdir="/your/events_path"
-```
-
-tensorboard可视化图
-![1701654257329](image/PyTorch学习笔记/1701654257329.png)
-
-![1701659621820](image/PyTorch学习笔记/1701659621820.png)
 
 ## 2.7 谈谈各种归一化操作Normalization
 ### 2.7.0 协变量偏移
@@ -359,6 +296,7 @@ pass
 多通道标准卷积 https://blog.csdn.net/weixin_39450742/article/details/122722242
 分组卷积 https://zhuanlan.zhihu.com/p/65377955
 深度可分离卷积 https://blog.csdn.net/zml194849/article/details/117021815
+转置卷积（逆卷积） https://github.com/vdumoulin/conv_arithmetic/tree/master
 
 1.标准多通道卷积
 ![1689928267779](image/PyTorch学习笔记/1689928267779.png)
@@ -383,7 +321,7 @@ out = layer(img)    #(64,6,6)
 pass
 ```
 
-2.深度可分离卷积
+3.深度可分离卷积
 由深度卷积dw和逐点卷积pw构成
 （1）深度卷积dw
 ![1689929332392](image/PyTorch学习笔记/1689929332392.png)
@@ -404,6 +342,21 @@ out = layer_pw(out)    #(64,6,6)
 # 使用的参数量为：3*3*(16/16)*(16/16)*16 + 1*1*16*64 = 114 + 1024 = 1138
 pass
 ```
+
+4.反（逆）卷积
+卷积过程的逆过程
+![1723701977642](image/PyTorch学习笔记/1723701977642.png)
+
+```python
+import torch
+import torch.nn as nn
+
+input = torch.randn(1, 3, 16, 16)
+m = nn.ConvTranspose2d(in_channels=3, out_channels=9, kernel_size=3, stride=1, padding=0, bias=False)
+output = m(input)       # output.shape(1,9,18,18)
+```
+
+ps:所有卷积计算过程，实际上都是对卷积核做了flip（首尾互换）处理，起源于数字信号中的卷积操作。之前没有注意到这个地方。很神奇。互相关运算以及卷积运算的区别。https://blog.csdn.net/qq_42589613/article/details/128297091
 
 ## 2.9 PyTorch中的损失函数
 
@@ -598,7 +551,9 @@ PyTorch模型的并行化方法分为**模型并行（Model Parallel）**和**�
 ### 2.两种数据并行化方式的说明及使用
 （1）DP
 使用的是torch.nn.DataParallel类。
+
 ``torch.nn.DataParallel(module, device_ids=None, output_device=None, dim=0)``
+
 该类传入一个PyTorch的模块，且这个模块必须是先保存在主GPU上，其工作原理是将模型从主GPU设备上复制到device_ids指定的设备上；dim参数规定了迷你批次的分割方向。
 使用示例如下：
 ```python
@@ -718,9 +673,13 @@ if __name__ == '__main__':
 
 ### 3.参考资料
 [pytorch单机多卡及常见问题](https://blog.csdn.net/u013531940/article/details/127858330)
+
 [多机多卡的基本概念](https://blog.csdn.net/a545454669/article/details/128772522)
+
 [PyTorch 多进程分布式训练实战](https://murphypei.github.io/blog/2020/09/pytorch-distributed)
+
 [PyTorch官网-DISTRIBUTED DATA PARALLEL](https://pytorch.org/docs/2.0/notes/ddp.html)
+
 
 ## 3.1 常见网络架构及解析
 
@@ -841,3 +800,71 @@ timeout: 20
 
 ## 3.2 Hook机制————为所欲为的钩子
 https://www.cnblogs.com/ArsenalfanInECNU/p/12871887.html
+
+
+## 3.3 tensorboard使用
+[tensorboardX官方Github](https://github.com/lanpa/tensorboardX)
+
+1.安装
+若使用pytorch框架，pip install tensorboardX
+若使用tensorflow框架，pip install tensorboard
+
+2.基础使用
+首先用SummaryWriter创建用于写events的对象，然后用add_scalar向该对象内写入数据，最后关闭写对象。可以将不同阶段(如训练与验证)写到一个写对象中，更方便对比。
+train.py
+```python
+from tensorboardX import SummaryWriter
+
+...
+
+# 一个写对象就对应着一个event
+train_log_path = '.'    # 在当前工作目录下保存，当前工作目录即os.getcwd()所得到的目录    
+valid_log_path = '.'    
+train_writer = SummaryWriter(train_log_path, filename_suffix='TRAIN')
+val_writer = SummaryWriter(valid_log_path, filename_suffix='VAL')
+
+...
+
+for epoch in range(0, max_epochs):
+    
+    ...
+
+    for batch_idx, batch in enumerate(train_dataloader):
+        ...
+        loss1=...
+        loss2=...
+        n_batchsize = len(train_dataloader)
+        step = epoch * n_batchsize + batch_idx
+        train_writer.add_scalar('Loss/Batch/loss1', loss1, step)
+        train_writer.add_scalar('Loss/Batch/loss2', loss2, step)
+    
+    # 计算一个epoch下来平均的指标值
+    avg_loss1=total_loss1/n_batchsize
+    avg_loss2=total_loss2/n_batchsize
+    train_writer.add_scalar('Loss/Epoch/loss1', avg_loss1, epoch)
+    train_writer.add_scalar('Loss/Epoch/loss2', avg_loss2, epoch)
+
+train_writer.close()
+```
+
+3.进阶使用
+```python
+# 导出网络结构图
+train_writer.add_graph(model, torch.Tensor(1,1024,3), False)
+
+# 导出所有常量为文件
+train_writer.export_scalars_to_json("all_scalars.json")
+```
+
+4.可视化图表
+```bash
+# 另开一个终端
+tensorboard --logdir="/your/events_path"
+```
+
+tensorboard可视化图
+![1701654257329](image/PyTorch学习笔记/1701654257329.png)
+
+![1701659621820](image/PyTorch学习笔记/1701659621820.png)
+
+## 3.4
